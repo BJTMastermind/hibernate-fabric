@@ -64,7 +64,7 @@
 This project is built with the following technologies:
 
 * ![Gradle](https://img.shields.io/badge/gradle-02303A.svg?style=for-the-badge&logo=gradle&logoColor=white)
-* ![Forge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=CurseForge&logoColor=white)
+* ![Fabric/Neoforge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=CurseForge&logoColor=white)
 * ![Visual Studio Code](https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -79,14 +79,11 @@ To get a local copy up and running, follow these simple steps.
 
 Ensure you have the following installed on your machine:
 
-- **Java Development Kit (JDK)**: Version 17 or higher.
+- **Java Development Kit (JDK)**: Version 21 or higher.
   - [Download JDK](https://adoptium.net/)
-- **Gradle**: Version 7.6 or higher.
+- **Gradle**: Version 8.9 or higher.
   - [Install Gradle](https://gradle.org/install/)
-- **Git**: For cloning the repository.
-  - [Download Git](https://git-scm.com/downloads)
-- **Minecraft**: Version 1.20.1 or higher (untested)
-- **Forge**: Version 47.3.5 or higher (untested)
+- **Minecraft**: Version 1.21.6 or higher
 
 ### Build
 
@@ -102,7 +99,7 @@ Ensure you have the following installed on your machine:
 
 3. Build the project with Gradle
     ```sh
-    ./gradlew build
+    ./gradlew clean :fabric:build :neoforge:build
     ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -110,7 +107,7 @@ Ensure you have the following installed on your machine:
 ## Run
 
 You will need a Minecraft Forge server. 
-Copy the `build/libs/hibernateforge-x.x.x.jar` file to the `mods` folder of your Minecraft Forge server.
+Copy the `<mod>/build/libs/hibernateforge-<mod>-x.x.x.jar` file to the `mods` folder of your Minecraft Forge server.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
