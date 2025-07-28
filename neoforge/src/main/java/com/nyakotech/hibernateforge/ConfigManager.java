@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
- * Gerenciador de configuração para NeoForge
+ * Configuration Manager for NeoForge
  */
 public class ConfigManager {
     private static final String CONFIG_FILENAME = "hibernateforge.json";
@@ -22,40 +22,40 @@ public class ConfigManager {
             Path configFile = configDir.resolve(CONFIG_FILENAME);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-            // Se não existe arquivo de config, cria com valores padrão
+            // If no config file exists, create one with default values
             if (Files.notExists(configFile)) {
                 JsonObject defaults = createDefaultConfig();
                 Files.createDirectories(configDir);
                 try (var writer = Files.newBufferedWriter(configFile, StandardOpenOption.CREATE_NEW)) {
                     gson.toJson(defaults, writer);
                 }
-                Constants.LOG.info("Arquivo de configuração criado: {}", configFile);
+                Constants.LOG.info("Configuration file created: {}", configFile);
             }
 
-            // Lê o arquivo e aplica as configurações
+            // Reads the file and applies the settings
             try (var reader = Files.newBufferedReader(configFile)) {
                 JsonObject config = gson.fromJson(reader, JsonObject.class);
                 applyConfigValues(config);
-                Constants.LOG.info("Configuração carregada com sucesso");
+                Constants.LOG.info("Configuration successfully loaded");
             }
 
         } catch (IOException e) {
-            Constants.LOG.error("Erro ao carregar configuração, usando valores padrão: ", e);
+            Constants.LOG.error("Error loading configuration, using default values: ", e);
         }
     }
 
     private static JsonObject createDefaultConfig() {
         JsonObject config = new JsonObject();
 
-        // Adiciona comentário sobre a configuração
-        config.addProperty("_comment", "Configuração do Hibernateforge - Edite conforme necessário");
+        // Adds a comment about the configuration
+        config.addProperty("_comment", "Hibernateforge configuration — Edit as needed");
 
-        // Configurações básicas
+        // Basic settings
         config.addProperty("startEnabled", CommonConfig.startEnabled);
         config.addProperty("ticksToSkip", CommonConfig.ticksToSkip);
         config.addProperty("permissionLevel", CommonConfig.permissionLevel);
 
-        // Configurações de memória
+        // Memory settings
         config.addProperty("enableMemoryOptimization", CommonConfig.enableMemoryOptimization);
         config.addProperty("memoryCleanupIntervalSeconds", CommonConfig.memoryCleanupIntervalSeconds);
         config.addProperty("memoryThresholdPercent", CommonConfig.memoryThresholdPercent);
@@ -74,12 +74,12 @@ public class ConfigManager {
     }
 
     private static void applyConfigValues(JsonObject config) {
-        // Configurações básicas
+        // Basic settings
         CommonConfig.startEnabled = getBoolean(config, "startEnabled", CommonConfig.startEnabled);
         CommonConfig.ticksToSkip = getLong(config, "ticksToSkip", CommonConfig.ticksToSkip);
         CommonConfig.permissionLevel = getInt(config, "permissionLevel", CommonConfig.permissionLevel);
 
-        // Configurações de memória
+        // Memory settings
         CommonConfig.enableMemoryOptimization = getBoolean(config, "enableMemoryOptimization", CommonConfig.enableMemoryOptimization);
         CommonConfig.memoryCleanupIntervalSeconds = getInt(config, "memoryCleanupIntervalSeconds", CommonConfig.memoryCleanupIntervalSeconds);
         CommonConfig.memoryThresholdPercent = getDouble(config, "memoryThresholdPercent", CommonConfig.memoryThresholdPercent);
@@ -95,12 +95,12 @@ public class ConfigManager {
         CommonConfig.logMemoryUsage = getBoolean(config, "logMemoryUsage", CommonConfig.logMemoryUsage);
     }
 
-    // Métodos auxiliares para leitura segura da configuração
+    // Helper methods for safe configuration reading
     private static boolean getBoolean(JsonObject config, String key, boolean defaultValue) {
         try {
             return config.has(key) ? config.get(key).getAsBoolean() : defaultValue;
         } catch (Exception e) {
-            Constants.LOG.warn("Erro ao ler configuração '{}', usando valor padrão: {}", key, defaultValue);
+            Constants.LOG.warn("Error reading configuration '{}', using default value: {}", key, defaultValue);
             return defaultValue;
         }
     }
@@ -109,7 +109,7 @@ public class ConfigManager {
         try {
             return config.has(key) ? config.get(key).getAsInt() : defaultValue;
         } catch (Exception e) {
-            Constants.LOG.warn("Erro ao ler configuração '{}', usando valor padrão: {}", key, defaultValue);
+            Constants.LOG.warn("Error reading configuration '{}', using default value: {}", key, defaultValue);
             return defaultValue;
         }
     }
@@ -118,7 +118,7 @@ public class ConfigManager {
         try {
             return config.has(key) ? config.get(key).getAsLong() : defaultValue;
         } catch (Exception e) {
-            Constants.LOG.warn("Erro ao ler configuração '{}', usando valor padrão: {}", key, defaultValue);
+            Constants.LOG.warn("Error reading configuration '{}', using default value: {}", key, defaultValue);
             return defaultValue;
         }
     }
@@ -127,13 +127,13 @@ public class ConfigManager {
         try {
             return config.has(key) ? config.get(key).getAsDouble() : defaultValue;
         } catch (Exception e) {
-            Constants.LOG.warn("Erro ao ler configuração '{}', usando valor padrão: {}", key, defaultValue);
+            Constants.LOG.warn("Error reading configuration '{}', using default value: {}", key, defaultValue);
             return defaultValue;
         }
     }
 
     /**
-     * Salva as configurações atuais no arquivo
+     * Save the current settings to the file
      */
     public static void saveConfig() {
         try {
@@ -141,16 +141,16 @@ public class ConfigManager {
             Path configFile = configDir.resolve(CONFIG_FILENAME);
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-            JsonObject config = createDefaultConfig(); // Usa os valores atuais
+            JsonObject config = createDefaultConfig();
 
             try (var writer = Files.newBufferedWriter(configFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 gson.toJson(config, writer);
             }
 
-            Constants.LOG.info("Configuração salva em: {}", configFile);
+            Constants.LOG.info("Configuration saved to: {}", configFile);
 
         } catch (IOException e) {
-            Constants.LOG.error("Erro ao salvar configuração: ", e);
+            Constants.LOG.error("Error saving configuration: ", e);
         }
     }
 }

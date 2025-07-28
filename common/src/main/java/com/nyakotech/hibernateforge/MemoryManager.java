@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /*
- * Sistema de gerenciamento de memória para hibernação
+ * Memory Management System for Hibernation
  */
 
 public class MemoryManager {
@@ -22,14 +22,13 @@ public class MemoryManager {
     private static boolean memoryOptimizationActive = false;
     private static long lastGCTime = 0;
 
-    // Configurações ajustáveis
+    // Adjustable settings
 
     private static final long GC_INTERVAL_MS = 30000;
-    private static final int CHUNKS_TO_UNLOAD_PER_TICK = 10;
     private static final double MEMORY_THRESHOLD = 0.8;
 
     /*
-     * Inicia o sistema de otimização
+     * Start Memory Optimization
      */
     public static void startMemoryOptimization(MinecraftServer server) {
         if (memoryOptimizationActive) return;
@@ -37,7 +36,7 @@ public class MemoryManager {
         memoryOptimizationActive = true;
         Constants.LOG.info("Starting Memory Optimization for hibernation");
 
-        // Agenda limpeza periódica de memória
+        // Schedule periodic memory cleanup
 
         scheduler.scheduleAtFixedRate(() -> {
             if (Hibernation.isHibernating()) {
@@ -45,11 +44,11 @@ public class MemoryManager {
             }
         }, 10, 30, TimeUnit.SECONDS);
 
-        // Força garbage collection inicial
+        // Force initial garbage collection
         performGarbageCollection();
     }
     /*
-     * Para o sistema de otimização de memória
+     * For the memory optimization system
      */
 
     public static void stopMemoryOptimization() {
@@ -58,61 +57,61 @@ public class MemoryManager {
         memoryOptimizationActive = false;
         Constants.LOG.info("Stopping Memory Optimization for hibernation");
 
-        // Não cancela o scheduler para evitar problemas, apenas para as operações
+        // Do not cancel the scheduler to avoid issues — only pause operations
     }
 
     /*
-     * Executa limpeza completa de memória
+     * Execute full memory cleanup
      */
 
     private static void performMemoryCleanup(MinecraftServer server) {
         try {
-            // 1. Descarrega chunks desnecessários
+            // 1. Unload unnecessary chunks
             unloadUnnecessaryChunks(server);
 
-            // 2. Limpa entidades inativas
+            // 2. Clean inactive entities
             cleanupInactiveEntities(server);
 
-            // 3. Força garbage collection se necessário
+            // 3. Force garbage collection if needed
             if (shouldForceGC()) {
                 performGarbageCollection();
             }
 
-            // 4. Compacta estruturas de dados
+            // 4. Compact data structures (It didn't work)
             //compactDataStructures(server);
 
-            // Log do uso de memória
+            // Memory usage log
             logMemoryUsage();
         } catch (Exception e) {
-            Constants.LOG.error("Erro durante limpeza de memória: ", e);
+            Constants.LOG.error("Error during memory cleanup: ", e);
         }
     }
 
     /**
-     * Descarrega chuncks que não são necessários durante hibernação
+     * Unload unnecessary chunks during hibernation
      */
 
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
-            // Mantém apenas chunks do spawn carregados
+            // Keep only spawn chunks loaded
 
             var chunkSource = level.getChunkSource();
             var spawnPos = level.getSharedSpawnPos();
             int spawnX = spawnPos.getX() >> 4;
             int spawnZ = spawnPos.getZ() >> 4;
 
-            // Força o salvamento de chunnks antes de descarregar
+            // Force chunk saving before unloading
             CompletableFuture.runAsync(() -> {
                 try {
                     chunkSource.save(true);
                 } catch (RuntimeException e) {
-                    Constants.LOG.warn("Erro ao salvar chunks: ", e);
+                    Constants.LOG.warn("Error saving chunks: ", e);
                 }
             });
         }
     }
     /**
-     * Remove entidades que podem ser seguramente removidas durante hibernação
+     * Remove entities that can be safely deleted during hibernation
      */
     private static void cleanupInactiveEntities(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
@@ -132,7 +131,7 @@ public class MemoryManager {
             }
 
             if (!entitiesToRemove.isEmpty()) {
-                Constants.LOG.debug("Removidas {} entidades inativas do nível {}",
+                Constants.LOG.debug("{} inactive entities removed from the level {}",
                         entitiesToRemove.size(), level.dimension().location());
             }
         }
@@ -152,12 +151,12 @@ public class MemoryManager {
     }
 
     /**
-     * Verifica se uma entidade pode ser removida durante hibernação
+     * Check if an entity can be removed during hibernation
      */
 
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
-        // Remove apenas entidades temporárias/efeitos visuais
-        // NÃO remove itens no chão, mods importantes, etc.
+        // Only remove temporary entities/visual effects
+        // DO NOT remove items on the ground, important mods, etc.
         String entityType = entity.getType().toString();
 
         return entityType.contains("experience_orb") ||
@@ -167,25 +166,24 @@ public class MemoryManager {
     }
 
     /*
-      Compacta estruturas de dados do servidor
-     NÃO funcionou
+      Compacts server data structures (Did NOT work)
 
     private static void compactDataStructures(MinecraftServer server) {
-        // Compacta registries e cache
+        // Compacts registries and cache
         try {
-            // Limpa caches de receitas
+            // Clears recipe caches
             server.getRecipeManager().byType.forEach((type, recipes) -> {
                 if (recipes instanceof java.util.HashMap) {
                     ((java.util.HashMap<?, ?>) recipes).trimToSize();
                 }
             });
         } catch (Exception e) {
-            Constants.LOG.error("Erro ao compactar data structures: ", e);
+            Constants.LOG.error("Error while compacting data structures: ", e);
         }
     }*/
 
     /**
-     * Verifica se deve forçar garbage collection
+     * Check if garbage collection should be forced
      */
 
     private static boolean shouldForceGC() {
@@ -197,20 +195,20 @@ public class MemoryManager {
 
         double memoryUsagePercent = (double) usedMemory / (double) maxMemory;
 
-        // Força GC se usar mais que 80% da memória ou se passou tempo suficiente
+        // Forces GC if memory usage exceeds 80% or sufficient time has passed
         return memoryUsagePercent >  MEMORY_THRESHOLD ||
                 (System.currentTimeMillis() - lastGCTime > GC_INTERVAL_MS);
     }
 
     /**
-     * Executa garbage collection
+     * Performs garbage collection
      */
 
     private static void performGarbageCollection() {
         long beforeGC = getUsedMemoryMB();
         long startTime = System.currentTimeMillis();
 
-        // Sugere GC múltiplas vezes para ser mais efetivo
+        // Suggests GC multiple times to be more effective
         System.gc();
         try {
             Thread.sleep(100);
@@ -225,12 +223,12 @@ public class MemoryManager {
 
         lastGCTime = System.currentTimeMillis();
 
-        Constants.LOG.info("GC executado: {}MB liberados em {}ms (Antes: {}MB, Depois: {}MB)",
+        Constants.LOG.info("GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
                 memoryFreed, gcTime, beforeGC, afterGC);
     }
 
     /**
-     * Obtém o uso atual de memória em MB
+     * Gets current memory usage in MB
      */
     private static long getUsedMemoryMB() {
         Runtime runtime = Runtime.getRuntime();
@@ -238,14 +236,7 @@ public class MemoryManager {
     }
 
     /**
-     * Obtém a memória máxima disponível em MB
-     */
-    private static long getMaxMemoryMB() {
-        return Runtime.getRuntime().maxMemory() / (1024 * 1024);
-    }
-
-    /**
-     * Registra informações sobre uso de memória
+     * Records memory usage information
      */
     private static void logMemoryUsage() {
         Runtime runtime = Runtime.getRuntime();
@@ -257,16 +248,16 @@ public class MemoryManager {
         double usagePercent = (double) usedMemory / (double) maxMemory * 100;
         double formattedUsagePercent = Math.round(usagePercent * 10.0) / 10.0;
 
-        Constants.LOG.info("Memória: {}MB usada / {}MB máxima ({}%) - Livre: {}MB",
+        Constants.LOG.info("Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
                 usedMemory, maxMemory, formattedUsagePercent, freeMemory);
     }
 
     /**
-     * Salva dados importantes antes da otimização de memória
+     * Saves important data before memory optimization
      */
 
     public static void saveImportantData(MinecraftServer server) {
-        Constants.LOG.info("Salvando dados importantes antes da hibernação...");
+        Constants.LOG.info("Saving important data before hibernation...");
 
         try {
             // Salva o mundo
@@ -275,14 +266,14 @@ public class MemoryManager {
             // Salva os dados dos jogadores
             server.getPlayerList().saveAll();
 
-            Constants.LOG.info("Dados salvos com sucesso");
+            Constants.LOG.info("Data saved successfully");
         } catch (Exception e) {
-            Constants.LOG.error("Erro ao salvar dados importantes: ", e);
+            Constants.LOG.error("Error while saving important data: ", e);
         }
     }
 
     /**
-     * Shutdown gracioso do sistema
+     * Graceful system shutdown
      */
     public static void shutdown() {
         memoryOptimizationActive = false;

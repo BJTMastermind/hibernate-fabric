@@ -13,57 +13,58 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * Ponto de entrada principal para NeoForge com sistema completo de hibernação e otimização de memória
+ * Main entry point for NeoForge with full hibernation and memory optimization system
  */
 @Mod(Constants.MOD_ID)
 public class HibernateforgeNeoforge {
     private static boolean hibernating = false;
 
     public HibernateforgeNeoforge(IEventBus modBus) {
-        Constants.LOG.info("Carregando módulo NeoForge do Hibernateforge");
+        Constants.LOG.info("Loading NeoForge module from Hibernateforge");
 
-        // Carrega configurações
+        // Load settings
         ConfigManager.loadConfig();
 
-        // Inicializa classe comum
+        // Initialize common class
         CommonClass.init();
 
-        // Define estado inicial da hibernação
+        // Define initial hibernation state
         hibernating = CommonConfig.startEnabled;
         Hibernation.setHibernating(hibernating);
 
-        // Registra eventos no barramento do jogo
+        // Register events on the game bus
         IEventBus gameEventBus = NeoForge.EVENT_BUS;
         gameEventBus.addListener(this::onServerStarted);
         gameEventBus.addListener(this::onServerStopping);
+        gameEventBus.addListener(GameRuleHandler::onServerStarted);
         gameEventBus.addListener(HibernationCommand::register);
         gameEventBus.addListener(GameRuleHandler::onPlayerLogin);
         gameEventBus.addListener(GameRuleHandler::onPlayerLogout);
         gameEventBus.addListener(TickEventHandler::onServerTick);
         gameEventBus.addListener(ChunkUnloadHandler::onLevelTick);
 
-        Constants.LOG.info("Hibernateforge NeoForge inicializado com sucesso");
+        Constants.LOG.info("Hibernateforge NeoForge successfully initialized");
     }
 
     /**
-     * Chamado quando o servidor termina de inicializar
+     * Called when the server finishes initializing
      */
     private void onServerStarted(ServerStartedEvent event) {
-        Constants.LOG.info("Servidor iniciado - Hibernateforge ativo");
+        Constants.LOG.info("Server started — Hibernateforge active");
 
-        // Se habilitado, inicia hibernação se não há jogadores
+        // If enabled, start hibernation if no players are present
         if (CommonConfig.startEnabled && event.getServer().getPlayerCount() == 0) {
             setHibernationState(event.getServer(), true);
         }
     }
 
     /**
-     * Chamado quando o servidor está parando
+     * Called when the server is stopping
      */
     private void onServerStopping(ServerStoppingEvent event) {
-        Constants.LOG.info("Servidor parando - desabilitando hibernação");
+        Constants.LOG.info("Server stopping — disabling hibernation");
 
-        // Para otimização de memória antes do shutdown
+        // For memory optimization before shutdown
         if (CommonConfig.enableMemoryOptimization) {
             MemoryManager.stopMemoryOptimization();
             MemoryManager.shutdown();
@@ -74,30 +75,30 @@ public class HibernateforgeNeoforge {
     }
 
     /**
-     * Exposto para lógica de comandos e outros sistemas
+     * Exposed for command logic and other systems
      */
     public static boolean isHibernating() {
         return hibernating;
     }
 
     /**
-     * Define o estado de hibernação com todas as otimizações
+     * Set hibernation state with all optimizations
      */
     public static void setHibernationState(MinecraftServer server, boolean state) {
         boolean wasHibernating = hibernating;
         hibernating = state;
 
-        // Atualiza o estado global
+        // Update global state
         Hibernation.setHibernating(state);
 
-        // Atualiza regras do jogo
+        // Update game rules
         GameRuleHandler.setHibernationGameRules(server, state);
 
-        // Gerencia otimização de memória
+        // Manage memory optimization
         if (CommonConfig.enableMemoryOptimization) {
             if (state && !wasHibernating) {
-                // Entrando em hibernação
-                Constants.LOG.info("Entrando em modo hibernação - iniciando otimizações");
+                // Entering hibernation
+                Constants.LOG.info("Entering hibernation mode — starting optimizations");
 
                 if (CommonConfig.saveBeforeHibernation) {
                     MemoryManager.saveImportantData(server);
@@ -106,27 +107,27 @@ public class HibernateforgeNeoforge {
                 MemoryManager.startMemoryOptimization(server);
 
             } else if (!state && wasHibernating) {
-                // Saindo da hibernação
-                Constants.LOG.info("Saindo do modo hibernação - parando otimizações");
+                // Exiting hibernation
+                Constants.LOG.info("Exiting hibernation mode — stopping optimizations");
                 MemoryManager.stopMemoryOptimization();
             }
         }
 
-        // Log da mudança de estado
-        Constants.LOG.info("Estado de hibernação alterado: {} -> {}",
-                wasHibernating ? "HIBERNANDO" : "ATIVO",
-                state ? "HIBERNANDO" : "ATIVO");
+        // State Change Log
+        Constants.LOG.info("Hibernation state changed: {} -> {}",
+                wasHibernating ? "HIBERNATING" : "ACTIVE",
+                state ? "HIBERNATING" : "ACTIVE");
     }
 
     /**
-     * Força garbage collection (para uso por comandos)
+     * Force garbage collection (for use by commands)
      */
     public static void forceGarbageCollection() {
         if (CommonConfig.enableMemoryOptimization && CommonConfig.forceGarbageCollection) {
             long beforeGC = getUsedMemoryMB();
             System.gc();
 
-            // Pequena pausa para permitir que o GC complete
+            // Short pause to allow GC to complete
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
@@ -136,13 +137,13 @@ public class HibernateforgeNeoforge {
             long afterGC = getUsedMemoryMB();
             long memoryFreed = beforeGC - afterGC;
 
-            Constants.LOG.info("GC manual executado: {}MB liberados (Antes: {}MB, Depois: {}MB)",
+            Constants.LOG.info("Manual GC executed: {}MB freed (Before: {}MB, After: {}MB))",
                     memoryFreed, beforeGC, afterGC);
         }
     }
 
     /**
-     * Obtém informações de uso de memória
+     * Retrieve memory usage information
      */
     public static String getMemoryInfo() {
         Runtime runtime = Runtime.getRuntime();
@@ -156,13 +157,13 @@ public class HibernateforgeNeoforge {
         long totalHeapMB = runtime.totalMemory() / (1024 * 1024);
 
         return String.format(
-                "Memória: %dMB usada / %dMB máxima (%.1f%%) - Disponível: %dMB [Heap atual: %dMB]",
+                "Memory: %dMB used / %dMB max (%.1f%%) — Available: %dMB [Current heap: %dMB]",
                 usedMemory, maxMemory, usagePercent, availableMemory, totalHeapMB
         );
     }
 
     /**
-     * Obtém memória usada em MB
+     * Retrieve used memory in MB
      */
     private static long getUsedMemoryMB() {
         Runtime runtime = Runtime.getRuntime();
@@ -170,23 +171,23 @@ public class HibernateforgeNeoforge {
     }
 
     /**
-     * Verifica se o sistema de otimização está ativo
+     * Check if the optimization system is active
      */
     public static boolean isMemoryOptimizationEnabled() {
         return CommonConfig.enableMemoryOptimization;
     }
 
     /**
-     * Recarrega configurações do arquivo
+     * Reload configuration from file
      */
     public static void reloadConfig() {
-        Constants.LOG.info("Recarregando configurações...");
+        Constants.LOG.info("Reloading configurations...");
         ConfigManager.loadConfig();
-        Constants.LOG.info("Configurações recarregadas com sucesso");
+        Constants.LOG.info("Configurations reloaded successfully");
     }
 
     /**
-     * Salva configurações atuais no arquivo
+     * Save current configurations to file
      */
     public static void saveConfig() {
         ConfigManager.saveConfig();

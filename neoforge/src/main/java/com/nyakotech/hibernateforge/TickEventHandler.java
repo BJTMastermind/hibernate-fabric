@@ -3,26 +3,37 @@ package com.nyakotech.hibernateforge;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 public class TickEventHandler {
-    private static long lastTickTime = 0;
     private static long tickCounter = 0;
+    private static boolean wasHibernating = false;
 
     public static void onServerTick(ServerTickEvent.Pre event) {
-        if (Hibernation.isHibernating()) {
+        boolean isHibernating = Hibernation.isHibernating();
+
+        // If state changed, reset counter
+        if (isHibernating != wasHibernating) {
+            tickCounter = 0;
+            wasHibernating = isHibernating;
+        }
+
+        if (isHibernating) {
             tickCounter++;
 
-            // Só pula ticks se atingir o limite configurado
+            // Less frequent sleep with longer intervals
             if (tickCounter >= CommonConfig.ticksToSkip) {
                 tickCounter = 0;
 
-                // Sleep muito curto para reduzir uso de CPU, não travando o servidor
                 try {
-                    Thread.sleep(CommonConfig.sleepTimeMs);
+                    // Longer and less frequent sleep = less overhead
+                    Thread.sleep(CommonConfig.sleepTimeMs * 2);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-        } else {
-            tickCounter = 0; // Reset quando não hibernando
+
+            // Yield to allow other threads a chance without constant sleep
+            if (tickCounter % 5 == 0) {
+                Thread.yield();
+            }
         }
     }
 }

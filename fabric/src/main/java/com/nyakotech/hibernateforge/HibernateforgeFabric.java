@@ -29,7 +29,7 @@ public class HibernateforgeFabric implements ModInitializer {
         TickEventHandler.register();
         ChunkUnloadHandler.register();
 
-        // Registra shutdown hook para limpeza
+        // Registers shutdown hook for cleanup
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             MemoryManager.shutdown();
         }));
@@ -42,12 +42,12 @@ public class HibernateforgeFabric implements ModInitializer {
         boolean wasHibernating = hibernating;
         hibernating = state;
 
-        // Atualiza regras do jogo
+        // Updates game rules
         GameRuleHandler.setHibernationGameRules(server, state);
 
-        // Gerencia otimização de memória
+        // Manages memory optimization
         if (state && !wasHibernating) {
-            // Entrando em hibernação
+            // Entering hibernation
             if (CommonConfig.enableMemoryOptimization) {
                 if (CommonConfig.saveBeforeHibernation) {
                     MemoryManager.saveImportantData(server);
@@ -55,7 +55,7 @@ public class HibernateforgeFabric implements ModInitializer {
                 MemoryManager.startMemoryOptimization(server);
             }
         } else if (!state && wasHibernating) {
-            // Saindo da hibernação
+            // Exiting hibernation
             if (CommonConfig.enableMemoryOptimization) {
                 MemoryManager.stopMemoryOptimization();
             }
@@ -70,7 +70,18 @@ public class HibernateforgeFabric implements ModInitializer {
 
             // If no config on disk, write defaults
             if (Files.notExists(cfgFile)) {
-                JsonObject defaults = createDefaultConfig();
+                JsonObject defaults = new JsonObject();
+                defaults.addProperty("startEnabled", CommonConfig.startEnabled);
+                defaults.addProperty("ticksToSkip", CommonConfig.ticksToSkip);
+                defaults.addProperty("permissionLevel", CommonConfig.permissionLevel);
+                defaults.addProperty("sleepTimeMs", CommonConfig.sleepTimeMs);
+
+                // NEW SETTINGS FOR CPU OPTIMIZATION:
+                defaults.addProperty("aggressiveCpuSaving", CommonConfig.aggressiveCpuSaving);
+                defaults.addProperty("minSleepInterval", CommonConfig.minSleepInterval);
+                defaults.addProperty("highLoadSleepMultiplier", CommonConfig.highLoadSleepMultiplier);
+                defaults.addProperty("yieldInterval", CommonConfig.yieldInterval);
+
                 Files.createDirectories(cfgDir);
                 try (var writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE_NEW)) {
                     gson.toJson(defaults, writer);
@@ -80,11 +91,19 @@ public class HibernateforgeFabric implements ModInitializer {
             // Read whatever's in the file, override CommonConfig
             try (var reader = Files.newBufferedReader(cfgFile)) {
                 JsonObject obj = gson.fromJson(reader, JsonObject.class);
-                loadConfigValues(obj);
+                CommonConfig.startEnabled    = obj.has("startEnabled")    ? obj.get("startEnabled").getAsBoolean() : CommonConfig.startEnabled;
+                CommonConfig.ticksToSkip     = obj.has("ticksToSkip")     ? obj.get("ticksToSkip").getAsLong()      : CommonConfig.ticksToSkip;
+                CommonConfig.permissionLevel = obj.has("permissionLevel") ? obj.get("permissionLevel").getAsInt()   : CommonConfig.permissionLevel;
+                CommonConfig.sleepTimeMs     = obj.has("sleepTimeMs")     ? obj.get("sleepTimeMs").getAsInt()       : CommonConfig.sleepTimeMs;
+
+                // NOVAS CONFIGURAÇÕES:
+                CommonConfig.aggressiveCpuSaving = obj.has("aggressiveCpuSaving") ? obj.get("aggressiveCpuSaving").getAsBoolean() : CommonConfig.aggressiveCpuSaving;
+                CommonConfig.minSleepInterval = obj.has("minSleepInterval") ? obj.get("minSleepInterval").getAsLong() : CommonConfig.minSleepInterval;
+                CommonConfig.highLoadSleepMultiplier = obj.has("highLoadSleepMultiplier") ? obj.get("highLoadSleepMultiplier").getAsDouble() : CommonConfig.highLoadSleepMultiplier;
+                CommonConfig.yieldInterval = obj.has("yieldInterval") ? obj.get("yieldInterval").getAsInt() : CommonConfig.yieldInterval;
             }
 
         } catch (IOException e) {
-            // If something goes wrong, stick with defaults and log to console
             System.err.println("Failed to load hibernateforge config, using defaults:");
             e.printStackTrace();
         }
@@ -93,12 +112,12 @@ public class HibernateforgeFabric implements ModInitializer {
     private JsonObject createDefaultConfig() {
         JsonObject defaults = new JsonObject();
 
-        // Configurações básicas
+        // Basic settings
         defaults.addProperty("startEnabled", CommonConfig.startEnabled);
         defaults.addProperty("ticksToSkip", CommonConfig.ticksToSkip);
         defaults.addProperty("permissionLevel", CommonConfig.permissionLevel);
 
-        // Configurações de memória
+        // Memory settings
         defaults.addProperty("enableMemoryOptimization", CommonConfig.enableMemoryOptimization);
         defaults.addProperty("memoryCleanupIntervalSeconds", CommonConfig.memoryCleanupIntervalSeconds);
         defaults.addProperty("memoryThresholdPercent", CommonConfig.memoryThresholdPercent);
@@ -117,12 +136,12 @@ public class HibernateforgeFabric implements ModInitializer {
     }
 
     private void loadConfigValues(JsonObject obj) {
-        // Configurações básicas
+        // Basic settings
         CommonConfig.startEnabled = getBoolean(obj, "startEnabled", CommonConfig.startEnabled);
         CommonConfig.ticksToSkip = getLong(obj, "ticksToSkip", CommonConfig.ticksToSkip);
         CommonConfig.permissionLevel = getInt(obj, "permissionLevel", CommonConfig.permissionLevel);
 
-        // Configurações de memória
+        // Memory settings
         CommonConfig.enableMemoryOptimization = getBoolean(obj, "enableMemoryOptimization", CommonConfig.enableMemoryOptimization);
         CommonConfig.memoryCleanupIntervalSeconds = getInt(obj, "memoryCleanupIntervalSeconds", CommonConfig.memoryCleanupIntervalSeconds);
         CommonConfig.memoryThresholdPercent = getDouble(obj, "memoryThresholdPercent", CommonConfig.memoryThresholdPercent);
@@ -138,7 +157,7 @@ public class HibernateforgeFabric implements ModInitializer {
         CommonConfig.logMemoryUsage = getBoolean(obj, "logMemoryUsage", CommonConfig.logMemoryUsage);
     }
 
-    // Métodos auxiliares para leitura de configuração
+    // Helper methods for configuration reading
     private boolean getBoolean(JsonObject obj, String key, boolean defaultValue) {
         return obj.has(key) ? obj.get(key).getAsBoolean() : defaultValue;
     }

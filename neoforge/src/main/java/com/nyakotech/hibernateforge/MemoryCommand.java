@@ -32,7 +32,7 @@ public class MemoryCommand {
         HibernateforgeNeoforge.setHibernationState(server, newState);
 
         ctx.getSource().sendSuccess(
-                () -> Component.literal("Hibernação " + (newState ? "ativada" : "desativada")),
+                () -> Component.literal("Hibernation " + (newState ? "activated" : "deactivated")),
                 true
         );
         return 1;
@@ -43,10 +43,10 @@ public class MemoryCommand {
         int playerCount = ctx.getSource().getServer().getPlayerCount();
 
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Status da Hibernação:\n" +
-                        "- Estado: " + (hibernating ? "HIBERNANDO" : "ATIVO") + "\n" +
-                        "- Jogadores online: " + playerCount + "\n" +
-                        "- Otimização de memória: " + (HibernateforgeNeoforge.isMemoryOptimizationEnabled() ? "ATIVA" : "INATIVA")
+                "Hibernation Status:\n" +
+                        "- State: " + (hibernating ? "HIBERNANDO" : "ACTIVE") + "\n" +
+                        "- Online players: " + playerCount + "\n" +
+                        "- Memory Optimization: " + (HibernateforgeNeoforge.isMemoryOptimizationEnabled() ? "ACTIVE" : "INACTIVE")
         ), false);
 
         return 1;
@@ -54,19 +54,19 @@ public class MemoryCommand {
 
     private static int showMemoryInfo(CommandContext<CommandSourceStack> ctx) {
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Informações de Memória:\n" + HibernateforgeNeoforge.getMemoryInfo()
+                "Memory Information:\n" + HibernateforgeNeoforge.getMemoryInfo()
         ), false);
 
         return 1;
     }
 
     private static int forceGarbageCollection(CommandContext<CommandSourceStack> ctx) {
-        ctx.getSource().sendSuccess(() -> Component.literal("Executando limpeza de memória..."), false);
+        ctx.getSource().sendSuccess(() -> Component.literal("Performing memory cleanup..."), false);
 
         HibernateforgeNeoforge.forceGarbageCollection();
 
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Limpeza de memória executada!\n" +
+                "Memory cleanup executed!\n" +
                         HibernateforgeNeoforge.getMemoryInfo()
         ), false);
 
