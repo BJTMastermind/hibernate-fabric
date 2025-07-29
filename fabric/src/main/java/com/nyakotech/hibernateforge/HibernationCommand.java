@@ -11,7 +11,6 @@ public class HibernationCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 dispatcher.register(Commands.literal("hibernate")
-                        // Use CommonConfig, not a non-existent Config class
                         .requires(src -> src.hasPermission(CommonConfig.permissionLevel))
                         .executes(HibernationCommand::execute)
                 )
@@ -20,13 +19,35 @@ public class HibernationCommand {
 
     private static int execute(CommandContext<CommandSourceStack> ctx) {
         MinecraftServer server = ctx.getSource().getServer();
-        boolean newState = !HibernateforgeFabric.isHibernating();
+        boolean currentState = HibernateforgeFabric.isHibernating();
+        boolean newState = !currentState;
+
+        // Do not allow hibernation with players online
+        if (newState && !server.getPlayerList().getPlayers().isEmpty()) {
+            ctx.getSource().sendFailure(
+                    Component.literal("§cCannot hibernate while players are online! (" +
+                            server.getPlayerList().getPlayers().size() + " connected players)")
+            );
+            return 0;
+        }
+
+        // Warn if trying to disable hibernation with no players online
+        if (!newState && server.getPlayerList().getPlayers().isEmpty()) {
+            ctx.getSource().sendSuccess(
+                    () -> Component.literal("§eWarning: Disabling hibernation while no players are online. " +
+                            "Hibernation will be reactivated automatically."),
+                    true
+            );
+        }
+
         HibernateforgeFabric.setHibernationState(server, newState);
 
+        String status = newState ? "§aactivated" : "§cdeactivated";
         ctx.getSource().sendSuccess(
-                () -> Component.literal("Hibernation set to " + newState),
+                () -> Component.literal("§fHibernation " + status + "§f!"),
                 true
         );
+
         return 1;
     }
 }
