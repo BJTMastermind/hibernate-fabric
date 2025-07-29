@@ -22,7 +22,7 @@ public class HibernationCommand {
         boolean currentState = HibernateforgeFabric.isHibernating();
         boolean newState = !currentState;
 
-        // PROTEÇÃO: Não permitir hibernar com players online
+        // Do not allow hibernation with players online
         if (newState && !server.getPlayerList().getPlayers().isEmpty()) {
             ctx.getSource().sendFailure(
                     Component.literal("§cCannot hibernate while players are online! (" +
@@ -31,7 +31,7 @@ public class HibernationCommand {
             return 0;
         }
 
-        // PROTEÇÃO: Avisar se tentando desligar hibernação sem players
+        // Warn if trying to disable hibernation with no players online
         if (!newState && server.getPlayerList().getPlayers().isEmpty()) {
             ctx.getSource().sendSuccess(
                     () -> Component.literal("§eWarning: Disabling hibernation while no players are online. " +

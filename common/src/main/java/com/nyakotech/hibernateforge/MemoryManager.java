@@ -162,7 +162,7 @@ public class MemoryManager {
         return entityType.contains("experience_orb") ||
                 entityType.contains("firework") ||
                 entityType.contains("arrow") ||
-                (entity.tickCount > 6000 && entityType.contains("item")); // Itens muito antigos
+                (entity.tickCount > 6000 && entityType.contains("item"));
     }
 
     /*
@@ -260,10 +260,10 @@ public class MemoryManager {
         Constants.LOG.info("Saving important data before hibernation...");
 
         try {
-            // Salva o mundo
+            // Saves the world
             server.saveEverything(false, false, true);
 
-            // Salva os dados dos jogadores
+            // Saves player data
             server.getPlayerList().saveAll();
 
             Constants.LOG.info("Data saved successfully");

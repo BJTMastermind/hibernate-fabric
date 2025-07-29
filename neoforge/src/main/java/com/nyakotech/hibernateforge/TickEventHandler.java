@@ -24,7 +24,7 @@ public class TickEventHandler {
 
                 try {
                     // Longer and less frequent sleep = less overhead
-                    Thread.sleep(CommonConfig.sleepTimeMs * 2);
+                    Thread.sleep(CommonConfig.sleepTimeMs * 2L);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }

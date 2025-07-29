@@ -30,9 +30,7 @@ public class HibernateforgeFabric implements ModInitializer {
         ChunkUnloadHandler.register();
 
         // Registers shutdown hook for cleanup
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            MemoryManager.shutdown();
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(MemoryManager::shutdown));
     }
 
     /** Exposed to your command logic */
@@ -96,7 +94,7 @@ public class HibernateforgeFabric implements ModInitializer {
                 CommonConfig.permissionLevel = obj.has("permissionLevel") ? obj.get("permissionLevel").getAsInt()   : CommonConfig.permissionLevel;
                 CommonConfig.sleepTimeMs     = obj.has("sleepTimeMs")     ? obj.get("sleepTimeMs").getAsInt()       : CommonConfig.sleepTimeMs;
 
-                // NOVAS CONFIGURAÇÕES:
+                // NEW SETTINGS:
                 CommonConfig.aggressiveCpuSaving = obj.has("aggressiveCpuSaving") ? obj.get("aggressiveCpuSaving").getAsBoolean() : CommonConfig.aggressiveCpuSaving;
                 CommonConfig.minSleepInterval = obj.has("minSleepInterval") ? obj.get("minSleepInterval").getAsLong() : CommonConfig.minSleepInterval;
                 CommonConfig.highLoadSleepMultiplier = obj.has("highLoadSleepMultiplier") ? obj.get("highLoadSleepMultiplier").getAsDouble() : CommonConfig.highLoadSleepMultiplier;

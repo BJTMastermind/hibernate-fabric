@@ -44,7 +44,7 @@ public class MemoryCommand {
 
         ctx.getSource().sendSuccess(() -> Component.literal(
                 "Hibernation Status:\n" +
-                        "- State: " + (hibernating ? "HIBERNANDO" : "ACTIVE") + "\n" +
+                        "- State: " + (hibernating ? "HIBERNATING" : "ACTIVE") + "\n" +
                         "- Online players: " + playerCount + "\n" +
                         "- Memory Optimization: " + (HibernateforgeNeoforge.isMemoryOptimizationEnabled() ? "ACTIVE" : "INACTIVE")
         ), false);
