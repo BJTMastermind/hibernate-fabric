@@ -42,6 +42,8 @@
         <li><a href="#build">Build</a></li>
       </ul>
     </li>
+    <li><a href="#run">Run</a></li>
+    <li><a href="#configuration">Configuration</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -53,7 +55,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**Hibernateforge** is a lightweight tool that automatically puts your Minecraft Forge server to sleep when no players are online. By reducing CPU usage during idle times, it helps save server resources, lowers your electricity bill, and makes your server more eco-friendly. It’s a simple way to keep your Minecraft world running smoothly without wasting power when it’s not needed.
+**Hibernateforge** is a lightweight tool that automatically puts your Minecraft Forge server to sleep when no players are online. By reducing CPU usage during idle times, it helps save server resources, lowers your electricity bill, and makes your server more eco-friendly. It's a simple way to keep your Minecraft world running smoothly without wasting power when it's not needed.
 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -108,6 +110,84 @@ Ensure you have the following installed on your machine:
 
 You will need a Minecraft Forge server. 
 Copy the `<mod>/build/libs/hibernateforge-<mod>-x.x.x.jar` file to the `mods` folder of your Minecraft Forge server.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Configuration
+
+The mod automatically creates a configuration file at `config/hibernateforge.json` on first run. Here are the available settings:
+
+### Basic Settings
+
+```json
+{
+  "startEnabled": true,
+  "ticksToSkip": 400,
+  "permissionLevel": 2,
+  "sleepTimeMs": 75
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `startEnabled` | `true` | Whether hibernation activates automatically when server starts with no players |
+| `ticksToSkip` | `400` | Number of ticks to process before applying sleep during hibernation |
+| `permissionLevel` | `2` | Required permission level to use hibernation commands (0=all, 4=owner) |
+| `sleepTimeMs` | `75` | Milliseconds to sleep between tick processing cycles |
+
+### Memory Optimization
+
+```json
+{
+  "enableMemoryOptimization": true,
+  "memoryCleanupIntervalSeconds": 30,
+  "memoryThresholdPercent": 80.0,
+  "maxChunksToUnloadPerTick": 10,
+  "forceGarbageCollection": true,
+  "gcIntervalSeconds": 30,
+  "saveBeforeHibernation": true,
+  "removeOldDroppedItems": true,
+  "droppedItemMaxAgeSeconds": 300,
+  "removeProjectiles": true,
+  "removeExperienceOrbs": true,
+  "compactDataStructures": true,
+  "logMemoryUsage": true
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `enableMemoryOptimization` | `true` | Enable memory cleanup during hibernation |
+| `memoryCleanupIntervalSeconds` | `30` | How often to run memory cleanup routines |
+| `memoryThresholdPercent` | `80.0` | Memory usage percentage that triggers cleanup |
+| `maxChunksToUnloadPerTick` | `10` | Maximum chunks to unload per server tick |
+| `forceGarbageCollection` | `true` | Force Java garbage collection during hibernation |
+| `gcIntervalSeconds` | `30` | Minimum time between garbage collection runs |
+| `saveBeforeHibernation` | `true` | Save world data before entering hibernation |
+| `removeOldDroppedItems` | `true` | Remove old dropped items during hibernation |
+| `droppedItemMaxAgeSeconds` | `300` | Age in seconds after which items are removed (5 minutes) |
+| `removeProjectiles` | `true` | Remove arrows and other projectiles |
+| `removeExperienceOrbs` | `true` | Remove floating experience orbs |
+| `compactDataStructures` | `true` | Attempt to compact server data structures |
+| `logMemoryUsage` | `true` | Log memory usage information to console |
+
+### CPU Optimization
+
+```json
+{
+  "aggressiveCpuSaving": true,
+  "minSleepInterval": 1500,
+  "highLoadSleepMultiplier": 1.5,
+  "yieldInterval": 8
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `aggressiveCpuSaving` | `true` | Enable more aggressive CPU saving measures |
+| `minSleepInterval` | `1500` | Minimum time in milliseconds between sleep cycles |
+| `highLoadSleepMultiplier` | `1.5` | Multiplier for sleep time when system load is high |
+| `yieldInterval` | `8` | How often to yield CPU to other threads (every N ticks) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
