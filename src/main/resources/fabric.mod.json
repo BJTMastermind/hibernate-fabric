@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 1,
+    "id": "hibernate-fabric",
+    "version": "${version}",
+    "name": "Hibernate Fabric",
+    "description": "Let your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!",
+    "authors": [
+        "BJTMastermind",
+        "Thadah D. Denyse (Upstream Author)"
+    ],
+    "contact": {
+        "sources": "https://github.com/BJTMastermind/hibernate-fabric"
+    },
+    "license": "LGPL-3.0-or-later",
+    "icon": "assets/hibernate-fabric/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.nyakotech.hibernateforge.HibernateforgeFabric"
+        ]
+    },
+    "mixins": [],
+    "depends": {
+        "fabricloader": ">=0.17.3",
+        "fabric-api": "*",
+        "minecraft": "~1.21.9",
+        "java": ">=21"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
+}
