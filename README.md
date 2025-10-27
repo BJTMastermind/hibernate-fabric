@@ -1,94 +1,25 @@
-<h2 align="center">⚠️ THIS IS A MIRROR ⚠️</h2>
+<h1 align="center">Hibernate Fabric</h1>
 
-> [!WARNING]  
-> Hi there! This is a **read-only mirror**, automatically synced from our Forgejo instance.  
->   
-> - 🛠️ All development happens on the primary Forgejo repository  
-> - 💬 You’re welcome to open Issues, Discussions, or even PRs here if it’s convenient — just know they may not be acted on directly, since the sync is one-way  
->   
-> For the best chance of your contributions being merged, or for quicker responses, please head over to the main Forgejo repo.  
->   
-> - Original repo: https://git.prisma.moe/Thadah/Hibernateforge
->   
-> — *Self-hosting 4 the win!*
+<p align="center">Let your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!</p>
 
----
-
+[![Issues][issues-shield]][issues-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![LGPL v3.0 License][license-shield]][license-url]
 
-<!-- PROJECT LOGO 
-<br />
-<div align="center">
-  <a href="https://github.com/Thadah/hibernateforge">
-    <img src="src/assets/hfLogo.png" alt="Logo" width="160" height="160">
-  </a>
--->
-  <h1 align="center">Hibernateforge</h1>
-
-  <p align="center">
-    Let your Minecraft Forge server snooze when idle, slashing CPU usage without missing a block!
-    <br />
-    <br />
-    <a href="https://github.com/Thadah/hibernateforge">View Demo</a>
-    ·
-    <a href="https://github.com/Thadah/hibernateforge/issues">Report Bug or </a>
-    ·
-    <a href="https://github.com/Thadah/hibernateforge/issues">Request Feature</a>
-  </p>
-</div>
-
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#build">Build</a></li>
-      </ul>
-    </li>
-    <li><a href="#run">Run</a></li>
-    <li><a href="#configuration">Configuration</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
-
-
-<!-- ABOUT THE PROJECT -->
 ## About The Project
 
-**Hibernateforge** is a lightweight tool that automatically puts your Minecraft Forge server to sleep when no players are online. By reducing CPU usage during idle times, it helps save server resources, lowers your electricity bill, and makes your server more eco-friendly. It's a simple way to keep your Minecraft world running smoothly without wasting power when it's not needed.
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+**Hibernate Fabric** is a lightweight tool that automatically puts your Minecraft Fabric server to sleep when no players are online. By reducing CPU usage during idle times, it helps save server resources, lowers your electricity bill, and makes your server more eco-friendly. It's a simple way to keep your Minecraft world running smoothly without wasting power when it's not needed.
 
 ### Built With
 
 This project is built with the following technologies:
 
+* ![Java](https://img.shields.io/badge/Java-D5D5D5.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTEuNjIyIDI0Ljc0cy0xLjIzLjc0OC44NTUuOTYyYzIuNTEuMzIgMy44NDcuMjY3IDYuNjI1LS4yNjdhMTAuMDIgMTAuMDIgMCAwIDAgMS43NjMuODU1Yy02LjI1IDIuNjcyLTE0LjE2LS4xNi05LjI0NC0xLjU1em0tLjgtMy40NzNzLTEuMzM2IDEuMDE1Ljc0OCAxLjIzYzIuNzI1LjI2NyA0Ljg2Mi4zMiA4LjU1LS40MjdhMy4yNiAzLjI2IDAgMCAwIDEuMjgyLjgwMWMtNy41MzQgMi4yNDQtMTUuOTc2LjIxNC0xMC41OC0xLjYwM3ptMTQuNzQ3IDYuMDlzLjkwOC43NDgtMS4wMTUgMS4zMzZjLTMuNTggMS4wNy0xNS4wMTQgMS4zOS0xOC4yMiAwLTEuMTIyLS40OCAxLjAxNS0xLjE3NSAxLjctMS4yODIuNjk1LS4xNiAxLjA3LS4xNiAxLjA3LS4xNi0xLjIzLS44NTUtOC4xNzUgMS43NjMtMy41MjYgMi41MSAxMi43NyAyLjA4NCAyMy4yOTYtLjkwOCAxOS45ODMtMi40MDR6TTEyLjIgMTcuNjMzcy01LjgyNCAxLjM5LTIuMDg0IDEuODdjMS42MDMuMjE0IDQuNzU1LjE2IDcuNjk0LS4wNTMgMi40MDQtLjIxNCA0LjgxLS42NCA0LjgxLS42NHMtLjg1NS4zNzQtMS40NDMuNzQ4Yy01LjkzIDEuNTUtMTcuMzEyLjg1NS0xNC4wNTItLjc0OCAyLjc3OC0xLjMzNiA1LjA3Ni0xLjE3NSA1LjA3Ni0xLjE3NXptMTAuNDIgNS44MjRjNS45ODQtMy4xIDMuMjA2LTYuMDkgMS4yODItNS43MTctLjQ4LjEwNy0uNjk1LjIxNC0uNjk1LjIxNHMuMTYtLjMyLjUzNC0uNDI3YzMuNzk0LTEuMzM2IDYuNzg2IDQuMDA3LTEuMjMgNi4wOSAwIDAgLjA1My0uMDUzLjEwNy0uMTZ6bS05LjgzIDguNDQyYzUuNzcuMzc0IDE0LjU4Ny0uMjE0IDE0LjgtMi45NCAwIDAtLjQyNyAxLjA3LTQuNzU1IDEuODctNC45MTYuOTA4LTExLjAwNy44LTE0LjU4Ny4yMTQgMCAwIC43NDguNjQgNC41NDIuODU1eiIgZmlsbD0iIzRlNzg5NiIvPjxwYXRoIGQ9Ik0xOC45OTYuMDAxczMuMzEzIDMuMzY2LTMuMTUyIDguNDQyYy01LjE4MyA0LjExNC0xLjE3NSA2LjQ2NSAwIDkuMTM3LTMuMDQ2LTIuNzI1LTUuMjM2LTUuMTMtMy43NC03LjM3M0MxNC4yOTQgNi44OTMgMjAuMzMyIDUuMyAxOC45OTYuMDAxem0tMS43IDE1LjMzNWMxLjU1IDEuNzYzLS40MjcgMy4zNjYtLjQyNyAzLjM2NnMzLjk1NC0yLjAzIDIuMTM3LTQuNTQyYy0xLjY1Ni0yLjQwNC0yLjk0LTMuNTggNC4wMDctNy41ODcgMCAwLTEwLjk1MyAyLjcyNS01LjcxNyA4Ljc2M3oiIGZpbGw9IiNmNTgyMTkiLz48L3N2Zz4=)
 * ![Gradle](https://img.shields.io/badge/gradle-02303A.svg?style=for-the-badge&logo=gradle&logoColor=white)
-* ![Fabric/Neoforge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=CurseForge&logoColor=white)
-* ![Visual Studio Code](https://img.shields.io/badge/Visual_Studio_Code-0078D4?style=for-the-badge&logo=visual%20studio%20code&logoColor=white)
+* ![Fabric](https://img.shields.io/badge/Fabric-DBD0B4.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld0JveD0iMCAwIDE2IDE2Ij48cGF0aCBmaWxsPSIjMzgzNDJhIiBkPSJNOSAxaDF2MWgxdjFoMXYxaDF2MWgxdjFoMXYyaC0xdjFoLTJ2MWgtMXYxaC0xdjFIOXYySDh2MUg2di0xSDV2LTFINHYtMUgzdi0xSDJWOWgxVjhoMVY3aDFWNmgxVjVoMVY0aDFWMmgxeiIvPjxwYXRoIGZpbGw9IiNkYmQwYjQiIGQ9Ik00IDlWOGgxVjdoMVY2aDFsMS0xVjRoMVYyaDF2MWgxdjFoMXYxaDF2MWwtMSAxLTIgMy0zIDMtMy0zeiIvPjxwYXRoIGZpbGw9IiNiY2IyOWMiIGQ9Ik05IDNoMXYxaDF2MWgxdjFoMXYxaC0xTDkgNHpNMTAgMTBoMVY5aDFWN2gtMXYxaC0xekg4djJoMXYtMWgxek04IDEySDd2MWgxeiIvPjxwYXRoIGZpbGw9IiNjNmJjYTUiIGQ9Ik03IDVoMXYyaDN2MUg5VjZIN3pNNiA4aDF2MmgyVjlINnoiLz48cGF0aCBmaWxsPSIjYWVhNjk0IiBkPSJNMyA5djFsMyAzaDF2LTFINnYtMUg1di0xSDRWOXoiLz48cGF0aCBmaWxsPSIjOWE5MjdlIiBkPSJNMyAxMHYxaDJ2MmgydjFINnYtMkg0di0yeiIvPjxwYXRoIGZpbGw9IiM4MDdhNmQiIGQ9Ik0xMyA3aDF2MWgtMXoiLz48cGF0aCBmaWxsPSIjMzgzNDJhIiBkPSJNOSA0djFoMnYyaDFWNmgtMlY0eiIvPjwvc3ZnPgo=)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- GETTING STARTED -->
 ## Getting Started
 
 To get a local copy up and running, follow these simple steps.
@@ -97,41 +28,37 @@ To get a local copy up and running, follow these simple steps.
 
 Ensure you have the following installed on your machine:
 
-- **Java Development Kit (JDK)**: Version 21 or higher.
-  - [Download JDK](https://adoptium.net/)
-- **Gradle**: Version 8.9 or higher.
-  - [Install Gradle](https://gradle.org/install/)
-- **Minecraft**: Version 1.21.6 or higher
+* **Java Development Kit (JDK)**: Version 21 or higher.
+  * [Download JDK](https://adoptium.net/)
+* **Gradle**: Version 9.1 or higher.
+  * [Install Gradle](https://gradle.org/install/)
+* **Minecraft**: Version 1.21.9/10
 
 ### Build
 
 1. **Clone the repository**
-    ```sh
-    git clone https://github.com/Thadah/hibernateforge.git
-    ```
+```sh
+git clone https://github.com/BJTMastermind/hibernate-fabric.git
+```
 
 2. Navigate to the project directory
-    ```sh
-    cd hibernateforge
-    ```
+```sh
+cd hibernate-fabric
+```
 
 3. Build the project with Gradle
-    ```sh
-    ./gradlew clean :fabric:build :neoforge:build
-    ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+```sh
+./gradlew clean :fabric:build
+```
 
 ## Run
 
-You will need a Minecraft Forge server. 
-Copy the `<mod>/build/libs/hibernateforge-<mod>-x.x.x.jar` file to the `mods` folder of your Minecraft Forge server.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+You will need a Minecraft Fabric server.
+Copy the `<mod>/build/libs/hibernate-fabric-<mod>-x.x.x.jar` file to the `mods` folder of your Minecraft Fabric server.
 
 ## Configuration
 
-The mod automatically creates a configuration file at `config/hibernateforge.json` on first run. Here are the available settings:
+The mod automatically creates a configuration file at `config/hibernate-fabric.json` on first run. Here are the available settings:
 
 ### Basic Settings
 
@@ -141,7 +68,7 @@ The mod automatically creates a configuration file at `config/hibernateforge.jso
   "ticksToSkip": 400,
   "permissionLevel": 2,
   "sleepTimeMs": 75
-}
+  ...
 ```
 
 | Setting | Default | Description |
@@ -190,7 +117,7 @@ The mod automatically creates a configuration file at `config/hibernateforge.jso
 ### CPU Optimization
 
 ```json
-{
+  ...
   "aggressiveCpuSaving": true,
   "minSleepInterval": 1500,
   "highLoadSleepMultiplier": 1.5,
@@ -205,9 +132,6 @@ The mod automatically creates a configuration file at `config/hibernateforge.jso
 | `highLoadSleepMultiplier` | `1.5` | Multiplier for sleep time when system load is high |
 | `yieldInterval` | `8` | How often to yield CPU to other threads (every N ticks) |
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -222,28 +146,17 @@ Don't forget to give the project a star! Thanks again!
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- LICENSE -->
 ## License
 
-Distributed under the European Union Public License v1.2. See `LICENSE` for more information.
+Distributed under the **GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)**.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+This project is a fork of [Hibernateforge](https://github.com/Thadah/Hibernateforge) which was distributed under the **European Union Public License v1.2 (EUPL-1.2)**.
+Relicensing has been done in accordance with the compatibility clause of the EUPL (Article 5).
 
+Commits between `027f88d` (11/4/2024) and `e5cb169` (9/13/2025) remain under EUPL-1.2.
 
-<!-- CONTACT -->
-## Contact
+See `LICENSE` for more information.
 
-Thadah D. Denyse - thadahdenyse@protonmail.com
-
-Project Link: [https://github.com/Thadah/hibernateforge](https://github.com/Thadah/hibernateforge)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
 Thanks to these nice projects!
@@ -251,23 +164,13 @@ Thanks to these nice projects!
 * [Img Shields](https://shields.io)
 * [markdown-badges](https://github.com/Ileriayo/markdown-badges#table-of-contents)
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/Thadah/hibernateforge.svg?style=for-the-badge
-[contributors-url]: https://github.com/Thadah/hibernateforge/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Thadah/hibernateforge.svg?style=for-the-badge
-[forks-url]: https://github.com/Thadah/hibernateforge/network/members
-[stars-shield]: https://img.shields.io/github/stars/Thadah/hibernateforge.svg?style=for-the-badge
-[stars-url]: https://github.com/Thadah/hibernateforge/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Thadah/hibernateforge.svg?style=for-the-badge
-[issues-url]: https://github.com/Thadah/hibernateforge/issues
-[license-shield]: https://img.shields.io/github/license/Thadah/hibernateforge.svg?style=for-the-badge
-[license-url]: https://github.com/Thadah/hibernateforge/blob/master/LICENSE
-
----
-
-> [!WARNING]
-> **🔗 This repository is automatically mirrored from a private Forgejo instance.**
+[contributors-shield]: https://img.shields.io/github/contributors/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[contributors-url]: https://github.com/BJTMastermind/hibernate-fabric/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[forks-url]: https://github.com/BJTMastermind/hibernate-fabric/network/members
+[stars-shield]: https://img.shields.io/github/stars/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[stars-url]: https://github.com/BJTMastermind/hibernate-fabric/stargazers
+[issues-shield]: https://img.shields.io/github/issues/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[issues-url]: https://github.com/BJTMastermind/hibernate-fabric/issues
+[license-shield]: https://img.shields.io/github/license/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[license-url]: https://github.com/BJTMastermind/hibernate-fabric/blob/master/LICENSE
