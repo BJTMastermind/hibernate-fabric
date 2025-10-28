@@ -59,6 +59,8 @@ cd hibernate-fabric
 You will need a Minecraft Fabric server.
 Copy the `<mod>/build/libs/hibernate-fabric-x.x.x+mc1.x.x.jar` file to the `mods` folder of your Minecraft Fabric server.
 
+It's also recommended to set `pause-when-empty-seconds` to `0` in your `server.properties` file to disable the vanilla hibernation system.
+
 ## Configuration
 
 The mod automatically creates a configuration file at `config/hibernate-fabric.json` on first run. Here are the available settings:
