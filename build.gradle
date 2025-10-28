@@ -81,6 +81,12 @@ jar {
     from("LICENSE") {
         rename { "${it}_${inputs.properties.archivesName}"}
     }
+
+    archiveFileName.set("${project.archives_base_name}-${project.version}+mc${project.minecraft_version}.jar")
+}
+
+remapJar {
+    archiveFileName.set("${project.archives_base_name}-${project.version}+mc${project.minecraft_version}.jar")
 }
 
 // configure the maven publication

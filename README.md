@@ -57,7 +57,7 @@ cd hibernate-fabric
 ## Run
 
 You will need a Minecraft Fabric server.
-Copy the `<mod>/build/libs/hibernate-fabric-<mod>-x.x.x.jar` file to the `mods` folder of your Minecraft Fabric server.
+Copy the `<mod>/build/libs/hibernate-fabric-x.x.x+mc1.x.x.jar` file to the `mods` folder of your Minecraft Fabric server.
 
 ## Configuration
 
