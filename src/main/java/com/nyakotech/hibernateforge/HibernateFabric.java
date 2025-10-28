@@ -23,8 +23,7 @@ public class HibernateFabric implements ModInitializer {
         hibernating = Config.startEnabled;
 
         // Register everything
-        HibernationCommand.register();
-        MemoryCommand.register();
+        HibernateCommand.register();
         GameRuleHandler.register();
         TickEventHandler.register();
         ChunkUnloadHandler.register();

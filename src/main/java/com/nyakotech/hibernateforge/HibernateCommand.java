@@ -1,5 +1,6 @@
 package com.nyakotech.hibernateforge;
 
+import java.awt.Color;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
@@ -7,18 +8,18 @@ import net.minecraft.text.Text;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 
-public class MemoryCommand {
+public class HibernateCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("hibernate")
                     .requires(src -> src.hasPermissionLevel(Config.permissionLevel))
-                    .executes(MemoryCommand::toggleHibernation)
+                    .executes(HibernateCommand::toggleHibernation)
                     .then(CommandManager.literal("status")
-                            .executes(MemoryCommand::showStatus))
+                            .executes(HibernateCommand::showStatus))
                     .then(CommandManager.literal("memory")
-                            .executes(MemoryCommand::showMemoryInfo))
+                            .executes(HibernateCommand::showMemoryInfo))
                     .then(CommandManager.literal("gc")
-                            .executes(MemoryCommand::forceGarbageCollection))
+                            .executes(HibernateCommand::forceGarbageCollection))
             );
         });
     }
@@ -26,6 +27,26 @@ public class MemoryCommand {
     private static int toggleHibernation(CommandContext<ServerCommandSource> ctx) {
         MinecraftServer server = ctx.getSource().getServer();
         boolean newState = !HibernateFabric.isHibernating();
+
+        // Do not allow hibernation with players online
+        if (newState && server.getCurrentPlayerCount() >= 1) {
+            ctx.getSource().sendError(
+                    Text.literal("Cannot hibernate while players are online! (" +
+                        server.getCurrentPlayerCount() + " connected player" +
+                        (server.getCurrentPlayerCount() == 1 ? ")" : "s)")).withColor(hexColorToDecimal("#ff5555"))
+            );
+            return 0;
+        }
+
+        // Warn if trying to disable hibernation with no players online
+        if (!newState && server.getCurrentPlayerCount() == 0) {
+            ctx.getSource().sendFeedback(
+                    () -> Text.literal("Warning: Disabling hibernation while no players are online. " +
+                        "Hibernation will be reactivated automatically."),
+                    true
+            );
+        }
+
         HibernateFabric.setHibernationState(server, newState);
 
         ctx.getSource().sendFeedback(
@@ -41,7 +62,7 @@ public class MemoryCommand {
 
         ctx.getSource().sendFeedback(() -> Text.literal(
                 "Hibernation Status:\n" +
-                        "- State: " + (hibernating ? "HIBERNATING" : "ACTIVE") + "\n" +
+                        "- State: " + (hibernating ? "HIBERNATING" : "AWAKE") + "\n" +
                         "- Players online: " + playerCount + "\n" +
                         "- Memory optimization: " + (Config.enableMemoryOptimization ? "ACTIVE" : "INACTIVE")
         ), false);
@@ -99,5 +120,10 @@ public class MemoryCommand {
     private static long getUsedMemoryMB() {
         Runtime runtime = Runtime.getRuntime();
         return (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
+    }
+
+    private static int hexColorToDecimal(String hexColor) {
+        Color color = Color.decode(hexColor);
+        return (color.getRed() << 16) + (color.getGreen() << 8) + color.getBlue();
     }
 }
