@@ -4,7 +4,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.entity.Entity;
 
@@ -26,8 +25,8 @@ public class MemoryManager {
 
     // Adjustable settings
 
-    private static final long GC_INTERVAL_MS = 30000;
-    private static final double MEMORY_THRESHOLD = 0.8;
+    private static final long GC_INTERVAL_MS = Config.gcIntervalSeconds * 1000L;
+    private static final double MEMORY_THRESHOLD = Config.memoryThresholdPercent / 100.0;
 
     /*
      * Start Memory Optimization
@@ -44,7 +43,7 @@ public class MemoryManager {
             if (Hibernation.isHibernating()) {
                 performMemoryCleanup(server);
             }
-        }, 10, 30, TimeUnit.SECONDS);
+        }, 10, Config.memoryCleanupIntervalSeconds, TimeUnit.SECONDS);
 
         // Force initial garbage collection
         performGarbageCollection();
@@ -79,9 +78,6 @@ public class MemoryManager {
                 performGarbageCollection();
             }
 
-            // 4. Compact data structures (It didn't work)
-            //compactDataStructures(server);
-
             // Memory usage log
             logMemoryUsage();
         } catch (Exception e) {
@@ -95,12 +91,7 @@ public class MemoryManager {
 
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
         for (ServerWorld level : server.getWorlds()) {
-            // Keep only spawn chunks loaded
-
             ServerChunkManager chunkManager = level.getChunkManager();
-            BlockPos spawnPos = level.getSpawnPoint().getPos();
-            int spawnX = spawnPos.getX() >> 4;
-            int spawnZ = spawnPos.getZ() >> 4;
 
             // Force chunk saving before unloading
             CompletableFuture.runAsync(() -> {
@@ -158,31 +149,14 @@ public class MemoryManager {
 
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
         // Only remove temporary entities/visual effects
-        // DO NOT remove items on the ground, important mods, etc.
+        // DO NOT remove items on the ground, important mobs, etc.
         String entityType = entity.getType().toString();
 
-        return entityType.contains("experience_orb") ||
-                entityType.contains("firework") ||
-                entityType.contains("arrow") ||
-                (entity.age > 6000 && entityType.contains("item"));
+        return (entityType.contains("experience_orb") && Config.removeExperienceOrbs) ||
+                (entityType.contains("firework") ||
+                entityType.contains("arrow") && Config.removeProjectiles) ||
+                (entity.age > (Config.droppedItemMaxAgeSeconds * 20) && entityType.contains("item") && Config.removeOldDroppedItems);
     }
-
-    /*
-      Compacts server data structures (Did NOT work)
-
-    private static void compactDataStructures(MinecraftServer server) {
-        // Compacts registries and cache
-        try {
-            // Clears recipe caches
-            server.getRecipeManager().byType.forEach((type, recipes) -> {
-                if (recipes instanceof java.util.HashMap) {
-                    ((java.util.HashMap<?, ?>) recipes).trimToSize();
-                }
-            });
-        } catch (Exception e) {
-            Constants.LOG.error("Error while compacting data structures: ", e);
-        }
-    }*/
 
     /**
      * Check if garbage collection should be forced
@@ -197,7 +171,7 @@ public class MemoryManager {
 
         double memoryUsagePercent = (double) usedMemory / (double) maxMemory;
 
-        // Forces GC if memory usage exceeds 80% or sufficient time has passed
+        // Forces GC if memory usage exceeds threshold percentage defined in config (Default: 80%) or sufficient time has passed
         return memoryUsagePercent >  MEMORY_THRESHOLD ||
                 (System.currentTimeMillis() - lastGCTime > GC_INTERVAL_MS);
     }
@@ -241,6 +215,10 @@ public class MemoryManager {
      * Records memory usage information
      */
     private static void logMemoryUsage() {
+        if (!Config.logMemoryUsage) {
+            return;
+        }
+
         Runtime runtime = Runtime.getRuntime();
         long totalMemory = runtime.totalMemory() / (1024 * 1024);
         long freeMemory = runtime.freeMemory() / (1024 * 1024);

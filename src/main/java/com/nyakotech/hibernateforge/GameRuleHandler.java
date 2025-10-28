@@ -11,18 +11,18 @@ public class GameRuleHandler {
         // When the server fully initializes
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // If configured to hibernate on startup AND no players are online
-            if (Config.startEnabled && server.getPlayerManager().getPlayerList().isEmpty()) {
-                Constants.LOG.info("Server started with no players – applying hibernation game rules.");
+            if (Config.startEnabled && server.getCurrentPlayerCount() == 0) {
+                Constants.LOG.info("Server started with no players - applying hibernation game rules.");
                 setHibernationGameRules(server, true);
             } else {
-                Constants.LOG.info("Server started – applying normal game rules.");
+                Constants.LOG.info("Server started - applying normal game rules.");
                 setHibernationGameRules(server, false);
             }
         });
 
-        // When a player connects – ALWAYS disable hibernation game rules
+        // When a player connects - ALWAYS disable hibernation game rules
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            Constants.LOG.debug("Player {} connected – applying normal game rules.",
+            Constants.LOG.debug("Player {} connected - applying normal game rules.",
                     handler.getPlayer().getName().getString());
             setHibernationGameRules(server, false);
         });
@@ -34,11 +34,11 @@ public class GameRuleHandler {
             // Waits one tick to ensure the player list is updated
             server.execute(() -> {
                 // If no players are online, apply hibernation game rules
-                if (server.getPlayerManager().getPlayerList().isEmpty()) {
-                    Constants.LOG.info("Last player {} disconnected – applying hibernation game rules.", playerName);
+                if (server.getCurrentPlayerCount() == 0) {
+                    Constants.LOG.info("Last player {} disconnected - applying hibernation game rules.", playerName);
                     setHibernationGameRules(server, true);
                 } else {
-                    Constants.LOG.debug("Player {} disconnected, but there are still {} players online – keeping normal game rules.",
+                    Constants.LOG.debug("Player {} disconnected, but there are still {} players online - keeping normal game rules.",
                             playerName, server.getPlayerManager().getPlayerList().size());
                 }
             });

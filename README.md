@@ -48,7 +48,7 @@ cd hibernate-fabric
 
 3. Build the project with Gradle
 ```sh
-./gradlew clean :fabric:build
+./gradlew clean build
 ```
 
 ## Run
@@ -62,7 +62,7 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 
 ### Basic Settings
 
-```json
+```js
 {
   "startEnabled": true,
   "ticksToSkip": 400,
@@ -80,12 +80,11 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 
 ### Memory Optimization
 
-```json
-{
+```js
+  ...
   "enableMemoryOptimization": true,
   "memoryCleanupIntervalSeconds": 30,
   "memoryThresholdPercent": 80.0,
-  "maxChunksToUnloadPerTick": 10,
   "forceGarbageCollection": true,
   "gcIntervalSeconds": 30,
   "saveBeforeHibernation": true,
@@ -93,9 +92,8 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
   "droppedItemMaxAgeSeconds": 300,
   "removeProjectiles": true,
   "removeExperienceOrbs": true,
-  "compactDataStructures": true,
   "logMemoryUsage": true
-}
+  ...
 ```
 
 | Setting | Default | Description |
@@ -103,7 +101,6 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `enableMemoryOptimization` | `true` | Enable memory cleanup during hibernation |
 | `memoryCleanupIntervalSeconds` | `30` | How often to run memory cleanup routines |
 | `memoryThresholdPercent` | `80.0` | Memory usage percentage that triggers cleanup |
-| `maxChunksToUnloadPerTick` | `10` | Maximum chunks to unload per server tick |
 | `forceGarbageCollection` | `true` | Force Java garbage collection during hibernation |
 | `gcIntervalSeconds` | `30` | Minimum time between garbage collection runs |
 | `saveBeforeHibernation` | `true` | Save world data before entering hibernation |
@@ -111,12 +108,11 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `droppedItemMaxAgeSeconds` | `300` | Age in seconds after which items are removed (5 minutes) |
 | `removeProjectiles` | `true` | Remove arrows and other projectiles |
 | `removeExperienceOrbs` | `true` | Remove floating experience orbs |
-| `compactDataStructures` | `true` | Attempt to compact server data structures |
 | `logMemoryUsage` | `true` | Log memory usage information to console |
 
 ### CPU Optimization
 
-```json
+```js
   ...
   "aggressiveCpuSaving": true,
   "minSleepInterval": 1500,
