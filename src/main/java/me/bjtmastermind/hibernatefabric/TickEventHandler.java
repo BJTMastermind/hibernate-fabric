@@ -1,5 +1,9 @@
 package me.bjtmastermind.hibernatefabric;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -35,8 +39,10 @@ public class TickEventHandler {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             String playerName = handler.getPlayer().getName().getString();
 
-            // Waits one tick to ensure the count is accurate
-            server.execute(() -> {
+            // Waits one second to ensure the count is accurate
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+            scheduler.schedule(() -> server.execute(() -> {
                 // Check the actual player count on the server
                 int actualPlayerCount = server.getCurrentPlayerCount();
 
@@ -47,7 +53,7 @@ public class TickEventHandler {
                     Constants.LOG.debug("Player {} disconnected, but there are still {} players online.",
                             playerName, actualPlayerCount);
                 }
-            });
+            }), 1, TimeUnit.SECONDS);
         });
 
         // Each server tick with less CPU overhead
