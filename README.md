@@ -2,10 +2,14 @@
 
 <p align="center">Let your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!</p>
 
+<div align="center">
+
 [![Issues][issues-shield]][issues-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![LGPL v3.0 License][license-shield]][license-url]
+
+</div>
 
 ## About The Project
 
