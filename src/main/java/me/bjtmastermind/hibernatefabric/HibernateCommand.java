@@ -1,10 +1,11 @@
 package me.bjtmastermind.hibernatefabric;
 
-import java.awt.Color;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
+import net.minecraft.util.Formatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 
@@ -33,7 +34,8 @@ public class HibernateCommand {
             ctx.getSource().sendError(
                     Text.literal("Cannot hibernate while players are online! (" +
                         server.getCurrentPlayerCount() + " connected player" +
-                        (server.getCurrentPlayerCount() == 1 ? ")" : "s)")).withColor(hexColorToDecimal("#ff5555"))
+                        (server.getCurrentPlayerCount() == 1 ? ")" : "s)"))
+                        .withColor(TextColor.fromFormatting(Formatting.RED).getRgb())
             );
             return 0;
         }
@@ -120,10 +122,5 @@ public class HibernateCommand {
     private static long getUsedMemoryMB() {
         Runtime runtime = Runtime.getRuntime();
         return (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
-    }
-
-    private static int hexColorToDecimal(String hexColor) {
-        Color color = Color.decode(hexColor);
-        return (color.getRed() << 16) + (color.getGreen() << 8) + color.getBlue();
     }
 }
