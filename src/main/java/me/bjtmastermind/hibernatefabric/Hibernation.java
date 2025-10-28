@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 /**
  * Loader-agnostic holder of whether the server is in “hibernation” mode.

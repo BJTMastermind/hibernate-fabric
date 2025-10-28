@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

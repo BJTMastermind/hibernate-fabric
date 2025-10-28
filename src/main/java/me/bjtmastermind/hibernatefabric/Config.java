@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 public class Config {
     public static boolean startEnabled = true;

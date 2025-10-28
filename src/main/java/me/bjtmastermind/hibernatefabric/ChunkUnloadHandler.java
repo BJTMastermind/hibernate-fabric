@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.util.math.BlockPos;

@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

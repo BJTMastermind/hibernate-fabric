@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerChunkManager;

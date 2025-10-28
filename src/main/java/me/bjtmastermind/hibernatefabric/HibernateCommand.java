@@ -1,4 +1,4 @@
-package com.nyakotech.hibernateforge;
+package me.bjtmastermind.hibernatefabric;
 
 import java.awt.Color;
 import com.mojang.brigadier.context.CommandContext;
