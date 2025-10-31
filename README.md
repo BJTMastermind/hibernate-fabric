@@ -93,10 +93,13 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
   "forceGarbageCollection": true,
   "gcIntervalSeconds": 30,
   "saveBeforeHibernation": true,
-  "removeOldDroppedItems": true,
+  "removeEntities": [
+    "minecraft:item",
+    "minecraft:firework_rocket",
+    "minecraft:arrow",
+    "minecraft:experience_orb"
+  ],
   "droppedItemMaxAgeSeconds": 300,
-  "removeProjectiles": true,
-  "removeExperienceOrbs": true,
   "logMemoryUsage": true
   ...
 ```
@@ -109,10 +112,8 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `forceGarbageCollection` | `true` | Force Java garbage collection during hibernation |
 | `gcIntervalSeconds` | `30` | Minimum time between garbage collection runs |
 | `saveBeforeHibernation` | `true` | Save world data before entering hibernation |
-| `removeOldDroppedItems` | `true` | Remove old dropped items during hibernation |
+| `removeEntities` | `item`, `firework_rocket`, `arrow`, `experience_orb` | List of entities to remove during hibernation (ignores entities with custom names) |
 | `droppedItemMaxAgeSeconds` | `300` | Age in seconds after which items are removed (5 minutes) |
-| `removeProjectiles` | `true` | Remove arrows and other projectiles |
-| `removeExperienceOrbs` | `true` | Remove floating experience orbs |
 | `logMemoryUsage` | `true` | Log memory usage information to console |
 
 ### CPU Optimization

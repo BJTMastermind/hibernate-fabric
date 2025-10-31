@@ -2,15 +2,29 @@ package me.bjtmastermind.hibernatefabric;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Identifier;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HibernateFabric implements ModInitializer {
     private static boolean hibernating;
@@ -63,7 +77,21 @@ public class HibernateFabric implements ModInitializer {
         try {
             Path cfgDir  = FabricLoader.getInstance().getConfigDir();
             Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson    = new GsonBuilder().setPrettyPrinting().create();
+            Gson gson    = new GsonBuilder()
+                .registerTypeAdapter(Identifier.class, new JsonSerializer<Identifier>() {
+                    @Override
+                    public JsonElement serialize(Identifier src, Type typeOfSrc, JsonSerializationContext context) {
+                        return new JsonPrimitive(src.toString());
+                    }
+                })
+                .registerTypeAdapter(Identifier.class, new JsonDeserializer<Identifier>() {
+                    @Override
+                    public Identifier deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        return Identifier.tryParse(json.getAsString());
+                    }
+                })
+                .setPrettyPrinting()
+                .create();
 
             // If no config on disk, write defaults
             if (Files.notExists(cfgFile)) {
@@ -80,10 +108,12 @@ public class HibernateFabric implements ModInitializer {
                 defaults.addProperty("forceGarbageCollection", Config.forceGarbageCollection);
                 defaults.addProperty("gcIntervalSeconds", Config.gcIntervalSeconds);
                 defaults.addProperty("saveBeforeHibernation", Config.saveBeforeHibernation);
-                defaults.addProperty("removeOldDroppedItems", Config.removeOldDroppedItems);
+                JsonArray removeEntitiesArray = new JsonArray();
+                for (Identifier id : Config.removeEntities) {
+                    removeEntitiesArray.add(id.toString());
+                }
+                defaults.add("removeEntities", removeEntitiesArray);
                 defaults.addProperty("droppedItemMaxAgeSeconds", Config.droppedItemMaxAgeSeconds);
-                defaults.addProperty("removeProjectiles", Config.removeProjectiles);
-                defaults.addProperty("removeExperienceOrbs", Config.removeExperienceOrbs);
                 defaults.addProperty("logMemoryUsage", Config.logMemoryUsage);
 
                 // NEW SETTINGS FOR CPU OPTIMIZATION:
@@ -113,10 +143,8 @@ public class HibernateFabric implements ModInitializer {
                 Config.forceGarbageCollection = obj.has("forceGarbageCollection") ? obj.get("forceGarbageCollection").getAsBoolean() : Config.forceGarbageCollection;
                 Config.gcIntervalSeconds = obj.has("gcIntervalSeconds") ? obj.get("gcIntervalSeconds").getAsInt() : Config.gcIntervalSeconds;
                 Config.saveBeforeHibernation = obj.has("saveBeforeHibernation") ? obj.get("saveBeforeHibernation").getAsBoolean() : Config.saveBeforeHibernation;
-                Config.removeOldDroppedItems = obj.has("removeOldDroppedItems") ? obj.get("removeOldDroppedItems").getAsBoolean() : Config.removeOldDroppedItems;
+                Config.removeEntities = obj.has("removeEntities") ? parseRemoveEntitiesList(obj) : Config.removeEntities;
                 Config.droppedItemMaxAgeSeconds = obj.has("droppedItemMaxAgeSeconds") ? obj.get("droppedItemMaxAgeSeconds").getAsInt() : Config.droppedItemMaxAgeSeconds;
-                Config.removeProjectiles = obj.has("removeProjectiles") ? obj.get("removeProjectiles").getAsBoolean() : Config.removeProjectiles;
-                Config.removeExperienceOrbs = obj.has("removeExperienceOrbs") ? obj.get("removeExperienceOrbs").getAsBoolean() : Config.removeExperienceOrbs;
                 Config.logMemoryUsage = obj.has("logMemoryUsage") ? obj.get("logMemoryUsage").getAsBoolean() : Config.logMemoryUsage;
 
                 // NEW SETTINGS:
@@ -130,5 +158,20 @@ public class HibernateFabric implements ModInitializer {
             System.err.println("Failed to load hibernate-fabric config, using defaults:");
             e.printStackTrace();
         }
+    }
+
+    // Parses the 'removeEntities' array from the config file
+    private static List<Identifier> parseRemoveEntitiesList(JsonObject obj) {
+        JsonArray removeEntitiesArray = obj.getAsJsonArray("removeEntities");
+        List<Identifier> removeEntities = new ArrayList<>();
+
+        for (JsonElement element : removeEntitiesArray) {
+            Identifier entityId = Identifier.of(element.getAsString());
+
+            if (Registries.ENTITY_TYPE.containsId(entityId)) {
+                removeEntities.add(entityId);
+            }
+        }
+        return removeEntities;
     }
 }

@@ -1,5 +1,9 @@
 package me.bjtmastermind.hibernatefabric;
 
+import java.util.List;
+
+import net.minecraft.util.Identifier;
+
 public class Config {
     public static boolean startEnabled = true;
     public static long ticksToSkip = 400L;
@@ -12,10 +16,13 @@ public class Config {
     public static boolean forceGarbageCollection = true;
     public static int gcIntervalSeconds = 30;
     public static boolean saveBeforeHibernation = true;
-    public static boolean removeOldDroppedItems = true;
+    public static List<Identifier> removeEntities = List.of(
+        Identifier.of("minecraft:item"),
+        Identifier.of("minecraft:firework_rocket"),
+        Identifier.of("minecraft:arrow"),
+        Identifier.of("minecraft:experience_orb")
+    );
     public static int droppedItemMaxAgeSeconds = 300;
-    public static boolean removeProjectiles = true;
-    public static boolean removeExperienceOrbs = true;
     public static boolean logMemoryUsage = true;
 
     public static boolean aggressiveCpuSaving = true;

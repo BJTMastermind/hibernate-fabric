@@ -3,9 +3,11 @@ package me.bjtmastermind.hibernatefabric;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.Box;
 import net.minecraft.entity.Entity;
+import net.minecraft.registry.Registries;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -17,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 /*
  * Memory Management System for Hibernation
  */
-
 public class MemoryManager {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static boolean memoryOptimizationActive = false;
@@ -32,7 +33,9 @@ public class MemoryManager {
      * Start Memory Optimization
      */
     public static void startMemoryOptimization(MinecraftServer server) {
-        if (memoryOptimizationActive) return;
+        if (!Config.enableMemoryOptimization) {
+            return;
+        }
 
         memoryOptimizationActive = true;
         Constants.LOG.info("Starting Memory Optimization for hibernation");
@@ -40,18 +43,18 @@ public class MemoryManager {
         // Schedule periodic memory cleanup
 
         scheduler.scheduleAtFixedRate(() -> {
-            if (Hibernation.isHibernating()) {
+            if (HibernateFabric.isHibernating()) {
                 performMemoryCleanup(server);
             }
-        }, 10, Config.memoryCleanupIntervalSeconds, TimeUnit.SECONDS);
+        }, 0, Config.memoryCleanupIntervalSeconds, TimeUnit.SECONDS);
 
         // Force initial garbage collection
         performGarbageCollection();
     }
+
     /*
      * For the memory optimization system
      */
-
     public static void stopMemoryOptimization() {
         if (!memoryOptimizationActive) return;
 
@@ -64,7 +67,6 @@ public class MemoryManager {
     /*
      * Execute full memory cleanup
      */
-
     private static void performMemoryCleanup(MinecraftServer server) {
         try {
             // 1. Unload unnecessary chunks
@@ -88,7 +90,6 @@ public class MemoryManager {
     /**
      * Unload unnecessary chunks during hibernation
      */
-
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
         for (ServerWorld level : server.getWorlds()) {
             ServerChunkManager chunkManager = level.getChunkManager();
@@ -103,12 +104,12 @@ public class MemoryManager {
             });
         }
     }
+
     /**
      * Remove entities that can be safely deleted during hibernation
      */
     private static void cleanupInactiveEntities(MinecraftServer server) {
         for (ServerWorld level : server.getWorlds()) {
-
             List<Entity> entities = level.getEntitiesByType(
                     TypeFilter.instanceOf(Entity.class),
                     getWorldBorderBoundingBox(level),
@@ -124,7 +125,7 @@ public class MemoryManager {
             }
 
             if (!entitiesToRemove.isEmpty()) {
-                Constants.LOG.debug("{} inactive entities removed from the level {}",
+                Constants.LOG.info("{} inactive entities removed from the level {}",
                         entitiesToRemove.size(), level.getDimensionEntry().getIdAsString());
             }
         }
@@ -138,30 +139,31 @@ public class MemoryManager {
         double halfSize = size / 2.0;
 
         return new Box(
-                centerX - halfSize, Double.NEGATIVE_INFINITY, centerZ - halfSize,
-                centerX + halfSize, Double.POSITIVE_INFINITY, centerZ + halfSize
+                centerX - halfSize, Double.MIN_VALUE, centerZ - halfSize,
+                centerX + halfSize, Double.MAX_VALUE, centerZ + halfSize
         );
     }
 
     /**
      * Check if an entity can be removed during hibernation
      */
-
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
         // Only remove temporary entities/visual effects
         // DO NOT remove items on the ground, important mobs, etc.
-        String entityType = entity.getType().toString();
+        Identifier entityId = Registries.ENTITY_TYPE.getId(entity.getType());
 
-        return (entityType.contains("experience_orb") && Config.removeExperienceOrbs) ||
-                (entityType.contains("firework") ||
-                entityType.contains("arrow") && Config.removeProjectiles) ||
-                (entity.age > (Config.droppedItemMaxAgeSeconds * 20) && entityType.contains("item") && Config.removeOldDroppedItems);
+        if (Config.removeEntities.contains(Identifier.of("minecraft:item")) &&
+            entityId.equals(Identifier.of("minecraft:item")))
+        {
+            return entity.age >= (Config.droppedItemMaxAgeSeconds * 20);
+        } else {
+            return Config.removeEntities.contains(entityId) && !entity.hasCustomName();
+        }
     }
 
     /**
      * Check if garbage collection should be forced
      */
-
     private static boolean shouldForceGC() {
         Runtime runtime = Runtime.getRuntime();
         long totalMemory = runtime.totalMemory();
@@ -179,7 +181,6 @@ public class MemoryManager {
     /**
      * Performs garbage collection
      */
-
     private static void performGarbageCollection() {
         long beforeGC = getUsedMemoryMB();
         long startTime = System.currentTimeMillis();
@@ -235,7 +236,6 @@ public class MemoryManager {
     /**
      * Saves important data before memory optimization
      */
-
     public static void saveImportantData(MinecraftServer server) {
         Constants.LOG.info("Saving important data before hibernation...");
 
