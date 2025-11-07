@@ -3,7 +3,7 @@ package me.bjtmastermind.hibernatefabric;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.GameRules;
+import net.minecraft.world.level.GameRules;
 
 public class GameRuleHandler {
 
@@ -11,7 +11,7 @@ public class GameRuleHandler {
         // When the server fully initializes
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // If configured to hibernate on startup AND no players are online
-            if (Config.startEnabled && server.getCurrentPlayerCount() == 0) {
+            if (Config.startEnabled && server.getPlayerCount() == 0) {
                 Constants.LOG.info("Server started with no players - applying hibernation game rules.");
                 setHibernationGameRules(server, true);
             } else {
@@ -34,12 +34,12 @@ public class GameRuleHandler {
             // Waits one tick to ensure the player list is updated
             server.execute(() -> {
                 // If no players are online, apply hibernation game rules
-                if (server.getCurrentPlayerCount() == 0) {
+                if (server.getPlayerCount() == 0) {
                     Constants.LOG.info("Last player {} disconnected - applying hibernation game rules.", playerName);
                     setHibernationGameRules(server, true);
                 } else {
                     Constants.LOG.debug("Player {} disconnected, but there are still {} players online - keeping normal game rules.",
-                            playerName, server.getPlayerManager().getPlayerList().size());
+                            playerName, server.getPlayerList().getPlayers().size());
                 }
             });
         });
@@ -54,19 +54,19 @@ public class GameRuleHandler {
         GameRules rules = server.getGameRules();
 
         // Daylight cycle - OFF during hibernation
-        rules.get(GameRules.DO_DAYLIGHT_CYCLE).set(!hibernating, server);
+        rules.getRule(GameRules.RULE_DAYLIGHT).set(!hibernating, server);
 
         // Weather cycle - OFF during hibernation
-        rules.get(GameRules.DO_WEATHER_CYCLE).set(!hibernating, server);
+        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(!hibernating, server);
 
         // Random tick speed - 0 during hibernation, 3 normally
-        rules.get(GameRules.RANDOM_TICK_SPEED).set(hibernating ? 0 : 3, server);
+        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? 0 : 3, server);
 
         // Mob spawning - OFF during hibernation
-        rules.get(GameRules.DO_MOB_SPAWNING).set(!hibernating, server);
+        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(!hibernating, server);
 
         // Fire spread - OFF during hibernation
-        rules.get(GameRules.DO_FIRE_TICK).set(!hibernating, server);
+        rules.getRule(GameRules.RULE_DOFIRETICK).set(!hibernating, server);
 
         if (hibernating) {
             Constants.LOG.debug("Game rules set for hibernation: daylight=false, weather=false, randomTick=0, mobSpawn=false, fire=false");

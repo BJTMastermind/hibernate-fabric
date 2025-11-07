@@ -16,7 +16,7 @@ public class TickEventHandler {
         // Event when the server finishes initializing
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // If configured to hibernate on startup AND no players are online
-            if (Config.startEnabled && server.getCurrentPlayerCount() == 0) {
+            if (Config.startEnabled && server.getPlayerCount() == 0) {
                 Constants.LOG.info("Server started with no players - activating hibernation.");
                 HibernateFabric.setHibernationState(server, true);
             } else {
@@ -44,7 +44,7 @@ public class TickEventHandler {
 
             scheduler.schedule(() -> server.execute(() -> {
                 // Check the actual player count on the server
-                int actualPlayerCount = server.getCurrentPlayerCount();
+                int actualPlayerCount = server.getPlayerCount();
 
                 if (actualPlayerCount == 0 && !HibernateFabric.isHibernating()) {
                     Constants.LOG.info("Last player {} disconnected - activating hibernation.", playerName);
@@ -61,7 +61,7 @@ public class TickEventHandler {
             boolean isHibernating = HibernateFabric.isHibernating();
 
             // If hibernating but players are online, disable immediately
-            if (isHibernating && server.getCurrentPlayerCount() >= 1) {
+            if (isHibernating && server.getPlayerCount() >= 1) {
                 Constants.LOG.warn("Hibernation was active with players online - disabling!");
                 HibernateFabric.setHibernationState(server, false);
                 return;

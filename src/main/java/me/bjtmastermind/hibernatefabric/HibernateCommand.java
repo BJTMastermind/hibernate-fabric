@@ -2,48 +2,48 @@ package me.bjtmastermind.hibernatefabric;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
 
 public class HibernateCommand {
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("hibernate")
-                    .requires(src -> src.hasPermissionLevel(Config.permissionLevel))
+            dispatcher.register(Commands.literal("hibernate")
+                    .requires(src -> src.hasPermission(Config.permissionLevel))
                     .executes(HibernateCommand::toggleHibernation)
-                    .then(CommandManager.literal("status")
+                    .then(Commands.literal("status")
                             .executes(HibernateCommand::showStatus))
-                    .then(CommandManager.literal("memory")
+                    .then(Commands.literal("memory")
                             .executes(HibernateCommand::showMemoryInfo))
-                    .then(CommandManager.literal("gc")
+                    .then(Commands.literal("gc")
                             .executes(HibernateCommand::forceGarbageCollection))
             );
         });
     }
 
-    private static int toggleHibernation(CommandContext<ServerCommandSource> ctx) {
+    private static int toggleHibernation(CommandContext<CommandSourceStack> ctx) {
         MinecraftServer server = ctx.getSource().getServer();
         boolean newState = !HibernateFabric.isHibernating();
 
         // Do not allow hibernation with players online
-        if (newState && server.getCurrentPlayerCount() >= 1) {
-            ctx.getSource().sendError(
-                    Text.literal("Cannot hibernate while players are online! (" +
-                        server.getCurrentPlayerCount() + " connected player" +
-                        (server.getCurrentPlayerCount() == 1 ? ")" : "s)"))
-                        .withColor(TextColor.fromFormatting(Formatting.RED).getRgb())
+        if (newState && server.getPlayerCount() >= 1) {
+            ctx.getSource().sendFailure(
+                    Component.literal("Cannot hibernate while players are online! (" +
+                        server.getPlayerCount() + " connected player" +
+                        (server.getPlayerCount() == 1 ? ")" : "s)"))
+                        .withColor(TextColor.fromLegacyFormat(ChatFormatting.RED).getValue())
             );
             return 0;
         }
 
         // Warn if trying to disable hibernation with no players online
-        if (!newState && server.getCurrentPlayerCount() == 0) {
-            ctx.getSource().sendFeedback(
-                    () -> Text.literal("Warning: Disabling hibernation while no players are online. " +
+        if (!newState && server.getPlayerCount() == 0) {
+            ctx.getSource().sendSuccess(
+                    () -> Component.literal("Warning: Disabling hibernation while no players are online. " +
                         "Hibernation will be reactivated automatically."),
                     true
             );
@@ -51,18 +51,18 @@ public class HibernateCommand {
 
         HibernateFabric.setHibernationState(server, newState);
 
-        ctx.getSource().sendFeedback(
-                () -> Text.literal("Hibernation " + (newState ? "activated" : "deactivated")),
+        ctx.getSource().sendSuccess(
+                () -> Component.literal("Hibernation " + (newState ? "activated" : "deactivated")),
                 true
         );
         return 1;
     }
 
-    private static int showStatus(CommandContext<ServerCommandSource> ctx) {
+    private static int showStatus(CommandContext<CommandSourceStack> ctx) {
         boolean hibernating = HibernateFabric.isHibernating();
-        int playerCount = ctx.getSource().getServer().getCurrentPlayerCount();
+        int playerCount = ctx.getSource().getServer().getPlayerCount();
 
-        ctx.getSource().sendFeedback(() -> Text.literal(
+        ctx.getSource().sendSuccess(() -> Component.literal(
                 "Hibernation Status:\n" +
                         "- State: " + (hibernating ? "HIBERNATING" : "AWAKE") + "\n" +
                         "- Players online: " + playerCount + "\n" +
@@ -72,7 +72,7 @@ public class HibernateCommand {
         return 1;
     }
 
-    private static int showMemoryInfo(CommandContext<ServerCommandSource> ctx) {
+    private static int showMemoryInfo(CommandContext<CommandSourceStack> ctx) {
         Runtime runtime = Runtime.getRuntime();
         long totalMemory = runtime.totalMemory() / (1024 * 1024);
         long freeMemory = runtime.freeMemory() / (1024 * 1024);
@@ -81,7 +81,7 @@ public class HibernateCommand {
 
         double usagePercent = (double) usedMemory / maxMemory * 100;
 
-        ctx.getSource().sendFeedback(() -> Text.literal(
+        ctx.getSource().sendSuccess(() -> Component.literal(
                 "Memory Information:\n" +
                         "- Memory used: " + usedMemory + "MB\n" +
                         "- Total allocated memory: " + totalMemory + "MB\n" +
@@ -93,8 +93,8 @@ public class HibernateCommand {
         return 1;
     }
 
-    private static int forceGarbageCollection(CommandContext<ServerCommandSource> ctx) {
-        ctx.getSource().sendFeedback(() -> Text.literal("Performing memory cleanup..."), false);
+    private static int forceGarbageCollection(CommandContext<CommandSourceStack> ctx) {
+        ctx.getSource().sendSuccess(() -> Component.literal("Performing memory cleanup..."), false);
 
         long beforeGC = getUsedMemoryMB();
         System.gc();
@@ -109,7 +109,7 @@ public class HibernateCommand {
         long afterGC = getUsedMemoryMB();
         long memoryFreed = beforeGC - afterGC;
 
-        ctx.getSource().sendFeedback(() -> Text.literal(
+        ctx.getSource().sendSuccess(() -> Component.literal(
                 "Memory cleanup completed!\n" +
                         "- Memory before: " + beforeGC + "MB\n" +
                         "- Memory after: " + afterGC + "MB\n" +

@@ -1,8 +1,7 @@
 package me.bjtmastermind.hibernatefabric;
 
 import java.util.List;
-
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class Config {
     public static boolean startEnabled = true;
@@ -16,11 +15,11 @@ public class Config {
     public static boolean forceGarbageCollection = true;
     public static int gcIntervalSeconds = 30;
     public static boolean saveBeforeHibernation = true;
-    public static List<Identifier> removeEntities = List.of(
-        Identifier.of("minecraft:item"),
-        Identifier.of("minecraft:firework_rocket"),
-        Identifier.of("minecraft:arrow"),
-        Identifier.of("minecraft:experience_orb")
+    public static List<ResourceLocation> removeEntities = List.of(
+        ResourceLocation.parse("minecraft:item"),
+        ResourceLocation.parse("minecraft:firework_rocket"),
+        ResourceLocation.parse("minecraft:arrow"),
+        ResourceLocation.parse("minecraft:experience_orb")
     );
     public static int droppedItemMaxAgeSeconds = 300;
     public static boolean logMemoryUsage = true;

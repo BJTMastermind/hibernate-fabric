@@ -14,10 +14,9 @@ import com.google.gson.JsonSerializer;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
@@ -78,16 +77,16 @@ public class HibernateFabric implements ModInitializer {
             Path cfgDir  = FabricLoader.getInstance().getConfigDir();
             Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
             Gson gson    = new GsonBuilder()
-                .registerTypeAdapter(Identifier.class, new JsonSerializer<Identifier>() {
+                .registerTypeAdapter(ResourceLocation.class, new JsonSerializer<ResourceLocation>() {
                     @Override
-                    public JsonElement serialize(Identifier src, Type typeOfSrc, JsonSerializationContext context) {
+                    public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
                         return new JsonPrimitive(src.toString());
                     }
                 })
-                .registerTypeAdapter(Identifier.class, new JsonDeserializer<Identifier>() {
+                .registerTypeAdapter(ResourceLocation.class, new JsonDeserializer<ResourceLocation>() {
                     @Override
-                    public Identifier deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                        return Identifier.tryParse(json.getAsString());
+                    public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                        return ResourceLocation.tryParse(json.getAsString());
                     }
                 })
                 .setPrettyPrinting()
@@ -109,7 +108,7 @@ public class HibernateFabric implements ModInitializer {
                 defaults.addProperty("gcIntervalSeconds", Config.gcIntervalSeconds);
                 defaults.addProperty("saveBeforeHibernation", Config.saveBeforeHibernation);
                 JsonArray removeEntitiesArray = new JsonArray();
-                for (Identifier id : Config.removeEntities) {
+                for (ResourceLocation id : Config.removeEntities) {
                     removeEntitiesArray.add(id.toString());
                 }
                 defaults.add("removeEntities", removeEntitiesArray);
@@ -161,14 +160,14 @@ public class HibernateFabric implements ModInitializer {
     }
 
     // Parses the 'removeEntities' array from the config file
-    private static List<Identifier> parseRemoveEntitiesList(JsonObject obj) {
+    private static List<ResourceLocation> parseRemoveEntitiesList(JsonObject obj) {
         JsonArray removeEntitiesArray = obj.getAsJsonArray("removeEntities");
-        List<Identifier> removeEntities = new ArrayList<>();
+        List<ResourceLocation> removeEntities = new ArrayList<>();
 
         for (JsonElement element : removeEntitiesArray) {
-            Identifier entityId = Identifier.of(element.getAsString());
+            ResourceLocation entityId = ResourceLocation.parse(element.getAsString());
 
-            if (Registries.ENTITY_TYPE.containsId(entityId)) {
+            if (BuiltInRegistries.ENTITY_TYPE.containsKey(entityId)) {
                 removeEntities.add(entityId);
             }
         }

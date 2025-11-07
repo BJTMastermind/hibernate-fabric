@@ -1,14 +1,13 @@
 package me.bjtmastermind.hibernatefabric;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerChunkManager;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.TypeFilter;
-import net.minecraft.util.math.Box;
-import net.minecraft.entity.Entity;
-import net.minecraft.registry.Registries;
-
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -91,8 +90,8 @@ public class MemoryManager {
      * Unload unnecessary chunks during hibernation
      */
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
-        for (ServerWorld level : server.getWorlds()) {
-            ServerChunkManager chunkManager = level.getChunkManager();
+        for (ServerLevel level : server.getAllLevels()) {
+            ServerChunkCache chunkManager = level.getChunkSource();
 
             // Force chunk saving before unloading
             CompletableFuture.runAsync(() -> {
@@ -109,9 +108,9 @@ public class MemoryManager {
      * Remove entities that can be safely deleted during hibernation
      */
     private static void cleanupInactiveEntities(MinecraftServer server) {
-        for (ServerWorld level : server.getWorlds()) {
-            List<Entity> entities = level.getEntitiesByType(
-                    TypeFilter.instanceOf(Entity.class),
+        for (ServerLevel level : server.getAllLevels()) {
+            List<Entity> entities = level.getEntities(
+                    EntityTypeTest.forClass(Entity.class),
                     getWorldBorderBoundingBox(level),
                     entity -> true
             );
@@ -126,19 +125,19 @@ public class MemoryManager {
 
             if (!entitiesToRemove.isEmpty()) {
                 Constants.LOG.info("{} inactive entities removed from the level {}",
-                        entitiesToRemove.size(), level.getDimensionEntry().getIdAsString());
+                        entitiesToRemove.size(), level.dimensionTypeRegistration().getRegisteredName());
             }
         }
     }
 
-    private static Box getWorldBorderBoundingBox(ServerWorld level) {
+    private static AABB getWorldBorderBoundingBox(ServerLevel level) {
         var border = level.getWorldBorder();
         double centerX = border.getCenterX();
         double centerZ = border.getCenterZ();
         double size = border.getSize();
         double halfSize = size / 2.0;
 
-        return new Box(
+        return new AABB(
                 centerX - halfSize, Double.MIN_VALUE, centerZ - halfSize,
                 centerX + halfSize, Double.MAX_VALUE, centerZ + halfSize
         );
@@ -150,12 +149,12 @@ public class MemoryManager {
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
         // Only remove temporary entities/visual effects
         // DO NOT remove items on the ground, important mobs, etc.
-        Identifier entityId = Registries.ENTITY_TYPE.getId(entity.getType());
+        ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
-        if (Config.removeEntities.contains(Identifier.of("minecraft:item")) &&
-            entityId.equals(Identifier.of("minecraft:item")))
+        if (Config.removeEntities.contains(ResourceLocation.parse("minecraft:item")) &&
+            entityId.equals(ResourceLocation.parse("minecraft:item")))
         {
-            return entity.age >= (Config.droppedItemMaxAgeSeconds * 20);
+            return entity.tickCount >= (Config.droppedItemMaxAgeSeconds * 20);
         } else {
             return Config.removeEntities.contains(entityId) && !entity.hasCustomName();
         }
@@ -241,10 +240,10 @@ public class MemoryManager {
 
         try {
             // Saves the world
-            server.saveAll(false, false, true);
+            server.saveEverything(false, false, true);
 
             // Saves player data
-            server.getPlayerManager().saveAllPlayerData();
+            server.getPlayerList().saveAll();
 
             Constants.LOG.info("Data saved successfully");
         } catch (Exception e) {
