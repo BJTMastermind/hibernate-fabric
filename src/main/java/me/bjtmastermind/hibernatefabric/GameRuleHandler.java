@@ -3,6 +3,7 @@ package me.bjtmastermind.hibernatefabric;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 
 public class GameRuleHandler {
@@ -25,6 +26,7 @@ public class GameRuleHandler {
             Constants.LOG.debug("Player {} connected - applying normal game rules.",
                     handler.getPlayer().getName().getString());
             setHibernationGameRules(server, false);
+            mc304138WorkaroundFix(server);
         });
 
         // When a player disconnects
@@ -73,5 +75,17 @@ public class GameRuleHandler {
         } else {
             Constants.LOG.debug("Game rules set to normal mode: daylight=true, weather=true, randomTick=3, mobSpawn=true, fire=true");
         }
+    }
+
+    // Workaround for https://bugs.mojang.com/browse/MC/issues/MC-304138
+    private static void mc304138WorkaroundFix(MinecraftServer server) {
+        Difficulty originalDifficulty = server.getWorldData().getDifficulty();
+        switch (originalDifficulty) {
+            case PEACEFUL -> server.setDifficulty(Difficulty.EASY, false);
+            case EASY -> server.setDifficulty(Difficulty.NORMAL, false);
+            case NORMAL -> server.setDifficulty(Difficulty.EASY, false);
+            case HARD -> server.setDifficulty(Difficulty.NORMAL, false);
+        }
+        server.setDifficulty(originalDifficulty, false);
     }
 }
