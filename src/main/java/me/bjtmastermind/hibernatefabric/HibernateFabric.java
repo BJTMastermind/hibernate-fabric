@@ -17,6 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
@@ -25,7 +26,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class HibernateFabric implements ModInitializer {
+    public static final String MOD_ID = "hibernate-fabric";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
     private static boolean hibernating;
 
     @Override
