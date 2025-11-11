@@ -17,10 +17,10 @@ public class TickEventHandler {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // If configured to hibernate on startup AND no players are online
             if (Config.startEnabled && server.getPlayerCount() == 0) {
-                Constants.LOG.info("Server started with no players - activating hibernation.");
+                HibernateFabric.LOGGER.info("Server started with no players - activating hibernation.");
                 HibernateFabric.setHibernationState(server, true);
             } else {
-                Constants.LOG.info("Server started with hibernation disabled.");
+                HibernateFabric.LOGGER.info("Server started with hibernation disabled.");
                 HibernateFabric.setHibernationState(server, false);
             }
         });
@@ -30,7 +30,7 @@ public class TickEventHandler {
 
             // ALWAYS disable hibernation when a player joins
             if (HibernateFabric.isHibernating()) {
-                Constants.LOG.info("Player {} connected - disabling hibernation.", handler.getPlayer().getName().getString());
+                HibernateFabric.LOGGER.info("Player {} connected - disabling hibernation.", handler.getPlayer().getName().getString());
                 HibernateFabric.setHibernationState(server, false);
             }
         });
@@ -47,10 +47,10 @@ public class TickEventHandler {
                 int actualPlayerCount = server.getPlayerCount();
 
                 if (actualPlayerCount == 0 && !HibernateFabric.isHibernating()) {
-                    Constants.LOG.info("Last player {} disconnected - activating hibernation.", playerName);
+                    HibernateFabric.LOGGER.info("Last player {} disconnected - activating hibernation.", playerName);
                     HibernateFabric.setHibernationState(server, true);
                 } else if (actualPlayerCount > 0) {
-                    Constants.LOG.debug("Player {} disconnected, but there are still {} players online.",
+                    HibernateFabric.LOGGER.debug("Player {} disconnected, but there are still {} players online.",
                             playerName, actualPlayerCount);
                 }
             }), 1, TimeUnit.SECONDS);
@@ -62,7 +62,7 @@ public class TickEventHandler {
 
             // If hibernating but players are online, disable immediately
             if (isHibernating && server.getPlayerCount() >= 1) {
-                Constants.LOG.warn("Hibernation was active with players online - disabling!");
+                HibernateFabric.LOGGER.warn("Hibernation was active with players online - disabling!");
                 HibernateFabric.setHibernationState(server, false);
                 return;
             }
