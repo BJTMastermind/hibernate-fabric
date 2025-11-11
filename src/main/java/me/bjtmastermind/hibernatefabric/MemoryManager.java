@@ -37,7 +37,7 @@ public class MemoryManager {
         }
 
         memoryOptimizationActive = true;
-        Constants.LOG.info("Starting Memory Optimization for hibernation");
+        HibernateFabric.LOGGER.info("Starting Memory Optimization for hibernation");
 
         // Schedule periodic memory cleanup
 
@@ -58,7 +58,7 @@ public class MemoryManager {
         if (!memoryOptimizationActive) return;
 
         memoryOptimizationActive = false;
-        Constants.LOG.info("Stopping Memory Optimization for hibernation");
+        HibernateFabric.LOGGER.info("Stopping Memory Optimization for hibernation");
 
         // Do not cancel the scheduler to avoid issues — only pause operations
     }
@@ -82,7 +82,7 @@ public class MemoryManager {
             // Memory usage log
             logMemoryUsage();
         } catch (Exception e) {
-            Constants.LOG.error("Error during memory cleanup: ", e);
+            HibernateFabric.LOGGER.error("Error during memory cleanup: ", e);
         }
     }
 
@@ -98,7 +98,7 @@ public class MemoryManager {
                 try {
                     chunkManager.save(true);
                 } catch (RuntimeException e) {
-                    Constants.LOG.warn("Error saving chunks: ", e);
+                    HibernateFabric.LOGGER.warn("Error saving chunks: ", e);
                 }
             });
         }
@@ -124,7 +124,7 @@ public class MemoryManager {
             }
 
             if (!entitiesToRemove.isEmpty()) {
-                Constants.LOG.info("{} inactive entities removed from the level {}",
+                HibernateFabric.LOGGER.info("{} inactive entities removed from the level {}",
                         entitiesToRemove.size(), level.dimensionTypeRegistration().getRegisteredName());
             }
         }
@@ -199,7 +199,7 @@ public class MemoryManager {
 
         lastGCTime = System.currentTimeMillis();
 
-        Constants.LOG.info("GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
+        HibernateFabric.LOGGER.info("GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
                 memoryFreed, gcTime, beforeGC, afterGC);
     }
 
@@ -228,7 +228,7 @@ public class MemoryManager {
         double usagePercent = (double) usedMemory / (double) maxMemory * 100;
         double formattedUsagePercent = Math.round(usagePercent * 10.0) / 10.0;
 
-        Constants.LOG.info("Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
+        HibernateFabric.LOGGER.info("Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
                 usedMemory, maxMemory, formattedUsagePercent, freeMemory);
     }
 
@@ -236,7 +236,7 @@ public class MemoryManager {
      * Saves important data before memory optimization
      */
     public static void saveImportantData(MinecraftServer server) {
-        Constants.LOG.info("Saving important data before hibernation...");
+        HibernateFabric.LOGGER.info("Saving important data before hibernation...");
 
         try {
             // Saves the world
@@ -245,9 +245,9 @@ public class MemoryManager {
             // Saves player data
             server.getPlayerList().saveAll();
 
-            Constants.LOG.info("Data saved successfully");
+            HibernateFabric.LOGGER.info("Data saved successfully");
         } catch (Exception e) {
-            Constants.LOG.error("Error while saving important data: ", e);
+            HibernateFabric.LOGGER.error("Error while saving important data: ", e);
         }
     }
 
