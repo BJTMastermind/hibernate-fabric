@@ -1,15 +1,5 @@
 package me.bjtmastermind.hibernatefabric;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
@@ -17,8 +7,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 
 public class GameRuleHandler {
-    private static boolean serverJustStarted = true;
-    private static boolean firstPlayerJoined = false;
 
     public static void register() {
         // When the server fully initializes
@@ -31,16 +19,13 @@ public class GameRuleHandler {
                 HibernateFabric.LOGGER.info("Server started - applying normal game rules.");
                 setHibernationGameRules(server, false);
             }
-            serverJustStarted = false;
         });
 
         // When a player connects - ALWAYS disable hibernation game rules
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            firstPlayerJoined = true;
-            String playerName = handler.getPlayer().getName().getString();
+            HibernateFabric.LOGGER.debug("Player {} connected - applying normal game rules.",
+                handler.getPlayer().getName().getString());
 
-            HibernateFabric.LOGGER.debug("Player {} connected - applying normal game rules.", playerName);
-            readGameRulesCookie(server);
             setHibernationGameRules(server, false);
             mc304138WorkaroundFix(server);
         });
@@ -69,24 +54,22 @@ public class GameRuleHandler {
      * @param hibernating Whether it is hibernating (true) or not (false)
      */
     public static void setHibernationGameRules(MinecraftServer server, boolean hibernating) {
-        if (hibernating && !serverJustStarted && firstPlayerJoined) writeGameRulesCookie(server);
-
         GameRules rules = server.getGameRules();
 
         // Daylight cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_DAYLIGHT).set(hibernating ? false : GameRulesCookie.doDaylightCycle, server);
+        rules.getRule(GameRules.RULE_DAYLIGHT).set(hibernating ? false : Config.doDaylightCycle, server);
 
         // Weather cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(hibernating ? false : GameRulesCookie.doWeatherCycle, server);
+        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(hibernating ? false : Config.doWeatherCycle, server);
 
         // Random tick speed - 0 during hibernation
-        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? 0 : GameRulesCookie.randomTickSpeed, server);
+        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? 0 : Config.randomTickSpeed, server);
 
         // Mob spawning - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(hibernating ? false : GameRulesCookie.doMobSpawning, server);
+        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(hibernating ? false : Config.doMobSpawning, server);
 
         // Fire spread - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? false : GameRulesCookie.doFireTick, server);
+        rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? false : Config.doFireTick, server);
 
         HibernateFabric.LOGGER.debug(
             "Game rules set {}: daylight={}, weather={}, randomTick={}, mobSpawn={}, fire={}",
@@ -96,85 +79,6 @@ public class GameRuleHandler {
             rules.getRule(GameRules.RULE_RANDOMTICKING).get(),
             rules.getRule(GameRules.RULE_DOMOBSPAWNING).get(),
             rules.getRule(GameRules.RULE_DOFIRETICK).get()
-        );
-    }
-
-    private static void readGameRulesCookie(MinecraftServer server) {
-        if (!HibernateFabric.isHibernating()) return;
-
-        Path cookieDir  = server.getServerDirectory();
-        Path cookieFile = cookieDir.resolve(HibernateFabric.MOD_ID+"_gamerules.cookie.json");
-        Gson gson = new Gson();
-
-        if (Files.exists(cookieFile)) {
-            HibernateFabric.LOGGER.info("Reading gamerules from cookie at: "+cookieFile.getFileName());
-        }
-
-        try {
-            try (BufferedReader reader = Files.newBufferedReader(cookieFile)) {
-                JsonObject obj = gson.fromJson(reader, JsonObject.class);
-                GameRulesCookie.doDaylightCycle = obj.has("doDaylightCycle") ? obj.get("doDaylightCycle").getAsBoolean() : true;
-                GameRulesCookie.doWeatherCycle = obj.has("doWeatherCycle") ? obj.get("doWeatherCycle").getAsBoolean() : true;
-                GameRulesCookie.randomTickSpeed = obj.has("randomTickSpeed") ? obj.get("randomTickSpeed").getAsInt() : 3;
-                GameRulesCookie.doMobSpawning = obj.has("doMobSpawning") ? obj.get("doMobSpawning").getAsBoolean() : true;
-                GameRulesCookie.doFireTick = obj.has("doFireTick") ? obj.get("doFireSpread").getAsBoolean() : true;
-            }
-            Files.deleteIfExists(cookieFile);
-        } catch (IOException e) {}
-    }
-
-    private static void writeGameRulesCookie(MinecraftServer server) {
-        Path cookieDir  = server.getServerDirectory();
-        Path cookieFile = cookieDir.resolve(HibernateFabric.MOD_ID+"_gamerules.cookie.json");
-        Gson gson = new Gson();
-
-        GameRules gamerules = server.getGameRules();
-
-        if (!hasDefaultGameRules(gamerules)) {
-            HibernateFabric.LOGGER.info("Writing gamerules to cookie at: "+cookieFile.getFileName());
-
-            try {
-                if (Files.notExists(cookieFile)) {
-                    JsonObject cookie = new JsonObject();
-                    if (!gamerules.getRule(GameRules.RULE_DAYLIGHT).get()) {
-                        cookie.addProperty("doDaylightCycle", gamerules.getRule(GameRules.RULE_DAYLIGHT).get());
-                    }
-
-                    if (!gamerules.getRule(GameRules.RULE_WEATHER_CYCLE).get()) {
-                        cookie.addProperty("doWeatherCycle", gamerules.getRule(GameRules.RULE_WEATHER_CYCLE).get());
-                    }
-
-                    if (gamerules.getRule(GameRules.RULE_RANDOMTICKING).get() != 3) {
-                        cookie.addProperty("randomTickSpeed", gamerules.getRule(GameRules.RULE_RANDOMTICKING).get());
-                    }
-
-                    if (!gamerules.getRule(GameRules.RULE_DOMOBSPAWNING).get()) {
-                        cookie.addProperty("doMobSpawning", gamerules.getRule(GameRules.RULE_DOMOBSPAWNING).get());
-                    }
-
-                    if (!gamerules.getRule(GameRules.RULE_DOFIRETICK).get()) {
-                        cookie.addProperty("doFireTick", gamerules.getRule(GameRules.RULE_DOFIRETICK).get());
-                    }
-
-                    try (BufferedWriter writer = Files.newBufferedWriter(cookieFile, StandardOpenOption.CREATE_NEW)) {
-                        gson.toJson(cookie, writer);
-                    }
-                }
-
-            } catch (IOException e) {
-                System.err.println("Failed to write gamerules cookie to disk!");
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static boolean hasDefaultGameRules(GameRules gamerules) {
-        return (
-            gamerules.getRule(GameRules.RULE_DAYLIGHT).get() &&
-            gamerules.getRule(GameRules.RULE_WEATHER_CYCLE).get() &&
-            gamerules.getRule(GameRules.RULE_RANDOMTICKING).get() == 3 &&
-            gamerules.getRule(GameRules.RULE_DOMOBSPAWNING).get() &&
-            gamerules.getRule(GameRules.RULE_DOFIRETICK).get()
         );
     }
 

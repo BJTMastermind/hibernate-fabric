@@ -128,6 +128,15 @@ public class HibernateFabric implements ModInitializer {
                 defaults.addProperty("highLoadSleepMultiplier", Config.highLoadSleepMultiplier);
                 defaults.addProperty("yieldInterval", Config.yieldInterval);
 
+                // NEW SETTINGS FOR RESTORING DEFAULT GAMERULE SETTINGS:
+                JsonObject restoreGameRulesAs = new JsonObject();
+                restoreGameRulesAs.addProperty("doDaylightCycle", Config.doDaylightCycle);
+                restoreGameRulesAs.addProperty("doWeatherCycle", Config.doWeatherCycle);
+                restoreGameRulesAs.addProperty("randomTickSpeed", Config.randomTickSpeed);
+                restoreGameRulesAs.addProperty("doMobSpawning", Config.doMobSpawning);
+                restoreGameRulesAs.addProperty("doFireTick", Config.doFireTick);
+                defaults.add("restoreGameRulesAs", restoreGameRulesAs);
+
                 Files.createDirectories(cfgDir);
                 try (var writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE_NEW)) {
                     gson.toJson(defaults, writer);
@@ -158,6 +167,14 @@ public class HibernateFabric implements ModInitializer {
                 Config.minSleepInterval = obj.has("minSleepInterval") ? obj.get("minSleepInterval").getAsLong() : Config.minSleepInterval;
                 Config.highLoadSleepMultiplier = obj.has("highLoadSleepMultiplier") ? obj.get("highLoadSleepMultiplier").getAsDouble() : Config.highLoadSleepMultiplier;
                 Config.yieldInterval = obj.has("yieldInterval") ? obj.get("yieldInterval").getAsInt() : Config.yieldInterval;
+
+                // NEW DEFAULT GAMERULES SETTINGS:
+                JsonObject restoreGameRulesAs = obj.has("restoreGameRulesAs") ? obj.getAsJsonObject("restoreGameRulesAs") : new JsonObject();
+                Config.doDaylightCycle = restoreGameRulesAs.has("doDaylightCycle") ? restoreGameRulesAs.get("doDaylightCycle").getAsBoolean() : Config.doDaylightCycle;
+                Config.doWeatherCycle = restoreGameRulesAs.has("doWeatherCycle") ? restoreGameRulesAs.get("doWeatherCycle").getAsBoolean() : Config.doWeatherCycle;
+                Config.randomTickSpeed = restoreGameRulesAs.has("randomTickSpeed") ? restoreGameRulesAs.get("randomTickSpeed").getAsInt() : Config.randomTickSpeed;
+                Config.doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : Config.doMobSpawning;
+                Config.doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : Config.doFireTick;
             }
 
         } catch (IOException e) {

@@ -28,4 +28,10 @@ public class Config {
     public static long minSleepInterval = 1500;
     public static double highLoadSleepMultiplier = 1.5;
     public static int yieldInterval = 8;
+
+    public static boolean doDaylightCycle = true;
+    public static boolean doWeatherCycle = true;
+    public static int randomTickSpeed = 3;
+    public static boolean doMobSpawning = true;
+    public static boolean doFireTick = true;
 }
