@@ -159,20 +159,11 @@ Commits between `027f88d` (11/4/2024) and `e5cb169` (9/13/2025) remain under EUP
 
 See `LICENSE` for more information.
 
-## Acknowledgments
-
-Thanks to these nice projects!
-
-* [Img Shields](https://shields.io)
-* [markdown-badges](https://github.com/Ileriayo/markdown-badges#table-of-contents)
-
-[contributors-shield]: https://img.shields.io/github/contributors/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
-[contributors-url]: https://github.com/BJTMastermind/hibernate-fabric/graphs/contributors
+[issues-shield]: https://img.shields.io/github/issues/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
+[issues-url]: https://github.com/BJTMastermind/hibernate-fabric/issues
 [forks-shield]: https://img.shields.io/github/forks/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
 [forks-url]: https://github.com/BJTMastermind/hibernate-fabric/network/members
 [stars-shield]: https://img.shields.io/github/stars/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
 [stars-url]: https://github.com/BJTMastermind/hibernate-fabric/stargazers
-[issues-shield]: https://img.shields.io/github/issues/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
-[issues-url]: https://github.com/BJTMastermind/hibernate-fabric/issues
 [license-shield]: https://img.shields.io/github/license/BJTMastermind/hibernate-fabric.svg?style=for-the-badge
 [license-url]: https://github.com/BJTMastermind/hibernate-fabric/blob/master/LICENSE
