@@ -9,7 +9,9 @@ public class ChunkUnloadHandler {
 
     public static void register() {
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (chunksUnloaded == HibernateFabric.isHibernating()) return;
+            if (chunksUnloaded == HibernateFabric.isHibernating()) {
+                return;
+            }
 
             for (ServerLevel level : server.getAllLevels()) {
                 BlockPos spawn = level.getRespawnData().pos();

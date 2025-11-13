@@ -11,21 +11,17 @@ public class GameRuleHandler {
     public static void register() {
         // When the server fully initializes
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            // If configured to hibernate on startup AND no players are online
             if (Config.startEnabled && server.getPlayerCount() == 0) {
                 HibernateFabric.LOGGER.info("Server started with no players - applying hibernation game rules.");
                 setHibernationGameRules(server, true);
-            } else {
-                HibernateFabric.LOGGER.info("Server started - applying normal game rules.");
-                setHibernationGameRules(server, false);
+                return;
             }
+            HibernateFabric.LOGGER.info("Server started - applying normal game rules.");
+            setHibernationGameRules(server, false);
         });
 
         // When a player connects - ALWAYS disable hibernation game rules
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            HibernateFabric.LOGGER.debug("Player {} connected - applying normal game rules.",
-                handler.getPlayer().getName().getString());
-
             setHibernationGameRules(server, false);
             mc304138WorkaroundFix(server);
         });
@@ -36,13 +32,9 @@ public class GameRuleHandler {
 
             // Waits one tick to ensure the player list is updated
             server.execute(() -> {
-                // If no players are online, apply hibernation game rules
                 if (server.getPlayerCount() == 0) {
                     HibernateFabric.LOGGER.info("Last player {} disconnected - applying hibernation game rules.", playerName);
                     setHibernationGameRules(server, true);
-                } else {
-                    HibernateFabric.LOGGER.debug("Player {} disconnected, but there are still {} players online - keeping normal game rules.",
-                            playerName, server.getPlayerCount());
                 }
             });
         });
@@ -70,16 +62,6 @@ public class GameRuleHandler {
 
         // Fire spread - OFF during hibernation
         rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? false : Config.doFireTick, server);
-
-        HibernateFabric.LOGGER.debug(
-            "Game rules set {}: daylight={}, weather={}, randomTick={}, mobSpawn={}, fire={}",
-            hibernating ? "for hibernation" : "to normal mode",
-            rules.getRule(GameRules.RULE_DAYLIGHT).get(),
-            rules.getRule(GameRules.RULE_WEATHER_CYCLE).get(),
-            rules.getRule(GameRules.RULE_RANDOMTICKING).get(),
-            rules.getRule(GameRules.RULE_DOMOBSPAWNING).get(),
-            rules.getRule(GameRules.RULE_DOFIRETICK).get()
-        );
     }
 
     // Workaround for https://bugs.mojang.com/browse/MC/issues/MC-304138

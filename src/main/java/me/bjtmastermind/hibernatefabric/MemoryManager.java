@@ -1,36 +1,33 @@
 package me.bjtmastermind.hibernatefabric;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerChunkCache;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.phys.AABB;
 
-/*
+/**
  * Memory Management System for Hibernation
  */
 public class MemoryManager {
+    // Do not cancel the scheduler to avoid issues — only pause operations
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static boolean memoryOptimizationActive = false;
-    private static long lastGCTime = 0;
-
-    // Adjustable settings
-
     private static final long GC_INTERVAL_MS = Config.gcIntervalSeconds * 1000L;
     private static final double MEMORY_THRESHOLD = Config.memoryThresholdPercent / 100.0;
 
-    /*
-     * Start Memory Optimization
-     */
+    private static boolean memoryOptimizationActive = false;
+    private static long lastGCTime = 0;
+
     public static void startMemoryOptimization(MinecraftServer server) {
         if (!Config.enableMemoryOptimization) {
             return;
@@ -40,7 +37,6 @@ public class MemoryManager {
         HibernateFabric.LOGGER.info("Starting Memory Optimization for hibernation");
 
         // Schedule periodic memory cleanup
-
         scheduler.scheduleAtFixedRate(() -> {
             if (HibernateFabric.isHibernating()) {
                 performMemoryCleanup(server);
@@ -51,21 +47,15 @@ public class MemoryManager {
         performGarbageCollection();
     }
 
-    /*
-     * For the memory optimization system
-     */
     public static void stopMemoryOptimization() {
-        if (!memoryOptimizationActive) return;
+        if (!memoryOptimizationActive) {
+            return;
+        }
 
         memoryOptimizationActive = false;
         HibernateFabric.LOGGER.info("Stopping Memory Optimization for hibernation");
-
-        // Do not cancel the scheduler to avoid issues — only pause operations
     }
 
-    /*
-     * Execute full memory cleanup
-     */
     private static void performMemoryCleanup(MinecraftServer server) {
         try {
             // 1. Unload unnecessary chunks
@@ -79,16 +69,12 @@ public class MemoryManager {
                 performGarbageCollection();
             }
 
-            // Memory usage log
             logMemoryUsage();
         } catch (Exception e) {
             HibernateFabric.LOGGER.error("Error during memory cleanup: ", e);
         }
     }
 
-    /**
-     * Unload unnecessary chunks during hibernation
-     */
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
             ServerChunkCache chunkManager = level.getChunkSource();
@@ -104,51 +90,47 @@ public class MemoryManager {
         }
     }
 
-    /**
-     * Remove entities that can be safely deleted during hibernation
-     */
+    // Remove entities that can be safely deleted during hibernation
     private static void cleanupInactiveEntities(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
             List<Entity> entities = level.getEntities(
-                    EntityTypeTest.forClass(Entity.class),
-                    getWorldBorderBoundingBox(level),
-                    entity -> true
+                EntityTypeTest.forClass(Entity.class),
+                getWorldBorderBoundingBox(level),
+                entity -> true
             );
 
             List<Entity> entitiesToRemove = entities.stream()
-                    .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
-                    .toList();
+                .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
+                .toList();
 
             for (Entity entity : entitiesToRemove) {
                 entity.discard();
             }
 
             if (!entitiesToRemove.isEmpty()) {
-                HibernateFabric.LOGGER.info("{} inactive entities removed from the level {}",
-                        entitiesToRemove.size(), level.dimensionTypeRegistration().getRegisteredName());
+                HibernateFabric.LOGGER.info(
+                    "{} inactive entities removed from the level {}",
+                    entitiesToRemove.size(),
+                    level.dimensionTypeRegistration().getRegisteredName()
+                );
             }
         }
     }
 
     private static AABB getWorldBorderBoundingBox(ServerLevel level) {
-        var border = level.getWorldBorder();
+        WorldBorder border = level.getWorldBorder();
         double centerX = border.getCenterX();
         double centerZ = border.getCenterZ();
         double size = border.getSize();
         double halfSize = size / 2.0;
 
         return new AABB(
-                centerX - halfSize, Double.MIN_VALUE, centerZ - halfSize,
-                centerX + halfSize, Double.MAX_VALUE, centerZ + halfSize
+            centerX - halfSize, Double.MIN_VALUE, centerZ - halfSize,
+            centerX + halfSize, Double.MAX_VALUE, centerZ + halfSize
         );
     }
 
-    /**
-     * Check if an entity can be removed during hibernation
-     */
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
-        // Only remove temporary entities/visual effects
-        // DO NOT remove items on the ground, important mobs, etc.
         ResourceLocation entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
 
         if (Config.removeEntities.contains(ResourceLocation.parse("minecraft:item")) &&
@@ -160,9 +142,7 @@ public class MemoryManager {
         }
     }
 
-    /**
-     * Check if garbage collection should be forced
-     */
+    // Check if garbage collection should be forced
     private static boolean shouldForceGC() {
         Runtime runtime = Runtime.getRuntime();
         long totalMemory = runtime.totalMemory();
@@ -173,18 +153,14 @@ public class MemoryManager {
         double memoryUsagePercent = (double) usedMemory / (double) maxMemory;
 
         // Forces GC if memory usage exceeds threshold percentage defined in config (Default: 80%) or sufficient time has passed
-        return memoryUsagePercent >  MEMORY_THRESHOLD ||
-                (System.currentTimeMillis() - lastGCTime > GC_INTERVAL_MS);
+        return memoryUsagePercent > MEMORY_THRESHOLD || (System.currentTimeMillis() - lastGCTime > GC_INTERVAL_MS);
     }
 
-    /**
-     * Performs garbage collection
-     */
     private static void performGarbageCollection() {
         long beforeGC = getUsedMemoryMB();
         long startTime = System.currentTimeMillis();
 
-        // Suggests GC multiple times to be more effective
+        // Run GC multiple times to be more effective
         System.gc();
         try {
             Thread.sleep(100);
@@ -200,20 +176,14 @@ public class MemoryManager {
         lastGCTime = System.currentTimeMillis();
 
         HibernateFabric.LOGGER.info("GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
-                memoryFreed, gcTime, beforeGC, afterGC);
+            memoryFreed, gcTime, beforeGC, afterGC);
     }
 
-    /**
-     * Gets current memory usage in MB
-     */
     private static long getUsedMemoryMB() {
         Runtime runtime = Runtime.getRuntime();
         return (runtime.totalMemory() - runtime.freeMemory()) / (1024 * 1024);
     }
 
-    /**
-     * Records memory usage information
-     */
     private static void logMemoryUsage() {
         if (!Config.logMemoryUsage) {
             return;
@@ -229,12 +199,9 @@ public class MemoryManager {
         double formattedUsagePercent = Math.round(usagePercent * 10.0) / 10.0;
 
         HibernateFabric.LOGGER.info("Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
-                usedMemory, maxMemory, formattedUsagePercent, freeMemory);
+            usedMemory, maxMemory, formattedUsagePercent, freeMemory);
     }
 
-    /**
-     * Saves important data before memory optimization
-     */
     public static void saveImportantData(MinecraftServer server) {
         HibernateFabric.LOGGER.info("Saving important data before hibernation...");
 
@@ -251,9 +218,6 @@ public class MemoryManager {
         }
     }
 
-    /**
-     * Graceful system shutdown
-     */
     public static void shutdown() {
         memoryOptimizationActive = false;
         scheduler.shutdown();

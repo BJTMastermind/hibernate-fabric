@@ -43,15 +43,9 @@ public class TickEventHandler {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
             scheduler.schedule(() -> server.execute(() -> {
-                // Check the actual player count on the server
-                int actualPlayerCount = server.getPlayerCount();
-
-                if (actualPlayerCount == 0 && !HibernateFabric.isHibernating()) {
+                if (server.getPlayerCount() == 0 && !HibernateFabric.isHibernating()) {
                     HibernateFabric.LOGGER.info("Last player {} disconnected - activating hibernation.", playerName);
                     HibernateFabric.setHibernationState(server, true);
-                } else if (actualPlayerCount > 0) {
-                    HibernateFabric.LOGGER.debug("Player {} disconnected, but there are still {} players online.",
-                            playerName, actualPlayerCount);
                 }
             }), 1, TimeUnit.SECONDS);
         });
@@ -73,25 +67,27 @@ public class TickEventHandler {
                 wasHibernating = isHibernating;
             }
 
-            if (isHibernating) {
-                tickCounter++;
+            if (!isHibernating) {
+                return;
+            }
 
-                // Less frequent sleep with longer duration
-                if (tickCounter >= Config.ticksToSkip) {
-                    tickCounter = 0;
+            tickCounter++;
 
-                    try {
-                        // Longer and less frequent sleep = less overhead
-                        Thread.sleep(Config.sleepTimeMs * 2);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+            // Less frequent sleep with longer duration
+            if (tickCounter >= Config.ticksToSkip) {
+                tickCounter = 0;
+
+                try {
+                    // Longer and less frequent sleep = less overhead
+                    Thread.sleep(Config.sleepTimeMs * 2);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
+            }
 
-                // Yield to give other threads a chance without constant sleeping
-                if (tickCounter % Config.yieldInterval == 0) {
-                    Thread.yield();
-                }
+            // Yield to give other threads a chance without constant sleeping
+            if (tickCounter % Config.yieldInterval == 0) {
+                Thread.yield();
             }
         });
     }

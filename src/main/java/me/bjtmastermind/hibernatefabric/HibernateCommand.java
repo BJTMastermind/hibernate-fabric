@@ -1,6 +1,7 @@
 package me.bjtmastermind.hibernatefabric;
 
 import com.mojang.brigadier.context.CommandContext;
+
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -10,17 +11,21 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 
 public class HibernateCommand {
+
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(Commands.literal("hibernate")
-                    .requires(src -> src.hasPermission(Config.permissionLevel))
-                    .executes(HibernateCommand::toggleHibernation)
-                    .then(Commands.literal("status")
-                            .executes(HibernateCommand::showStatus))
-                    .then(Commands.literal("memory")
-                            .executes(HibernateCommand::showMemoryInfo))
-                    .then(Commands.literal("gc")
-                            .executes(HibernateCommand::forceGarbageCollection))
+                .requires(src -> src.hasPermission(Config.permissionLevel))
+                .executes(HibernateCommand::toggleHibernation)
+                .then(Commands.literal("status")
+                    .executes(HibernateCommand::showStatus)
+                )
+                .then(Commands.literal("memory")
+                    .executes(HibernateCommand::showMemoryInfo)
+                )
+                .then(Commands.literal("gc")
+                    .executes(HibernateCommand::forceGarbageCollection)
+                )
             );
         });
     }
@@ -32,10 +37,10 @@ public class HibernateCommand {
         // Do not allow hibernation with players online
         if (newState && server.getPlayerCount() >= 1) {
             ctx.getSource().sendFailure(
-                    Component.literal("Cannot hibernate while players are online! (" +
-                        server.getPlayerCount() + " connected player" +
-                        (server.getPlayerCount() == 1 ? ")" : "s)"))
-                        .withColor(TextColor.fromLegacyFormat(ChatFormatting.RED).getValue())
+                Component.literal("Cannot hibernate while players are online! (" +
+                    server.getPlayerCount() + " connected player" +
+                    (server.getPlayerCount() == 1 ? ")" : "s)")
+                ).withColor(TextColor.fromLegacyFormat(ChatFormatting.RED).getValue())
             );
             return 0;
         }
@@ -43,17 +48,17 @@ public class HibernateCommand {
         // Warn if trying to disable hibernation with no players online
         if (!newState && server.getPlayerCount() == 0) {
             ctx.getSource().sendSuccess(
-                    () -> Component.literal("Warning: Disabling hibernation while no players are online. " +
-                        "Hibernation will be reactivated automatically."),
-                    true
+                () -> Component.literal("Warning: Disabling hibernation while no players are online. " +
+                    "Hibernation will be reactivated automatically."),
+                true
             );
         }
 
         HibernateFabric.setHibernationState(server, newState);
 
         ctx.getSource().sendSuccess(
-                () -> Component.literal("Hibernation " + (newState ? "activated" : "deactivated")),
-                true
+            () -> Component.literal("Hibernation " + (newState ? "activated" : "deactivated")),
+            true
         );
         return 1;
     }
@@ -63,10 +68,10 @@ public class HibernateCommand {
         int playerCount = ctx.getSource().getServer().getPlayerCount();
 
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Hibernation Status:\n" +
-                        "- State: " + (hibernating ? "HIBERNATING" : "AWAKE") + "\n" +
-                        "- Players online: " + playerCount + "\n" +
-                        "- Memory optimization: " + (Config.enableMemoryOptimization ? "ACTIVE" : "INACTIVE")
+            "Hibernation Status:\n" +
+            "- State: " + (hibernating ? "HIBERNATING" : "AWAKE") + "\n" +
+            "- Players online: " + playerCount + "\n" +
+            "- Memory optimization: " + (Config.enableMemoryOptimization ? "ACTIVE" : "INACTIVE")
         ), false);
 
         return 1;
@@ -82,12 +87,12 @@ public class HibernateCommand {
         double usagePercent = (double) usedMemory / maxMemory * 100;
 
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Memory Information:\n" +
-                        "- Memory used: " + usedMemory + "MB\n" +
-                        "- Total allocated memory: " + totalMemory + "MB\n" +
-                        "- Maximum memory: " + maxMemory + "MB\n" +
-                        "- Usage: " + String.format("%.1f%%", usagePercent) + "\n" +
-                        "- Free memory: " + freeMemory + "MB"
+            "Memory Information:\n" +
+            "- Memory used: " + usedMemory + "MB\n" +
+            "- Total allocated memory: " + totalMemory + "MB\n" +
+            "- Maximum memory: " + maxMemory + "MB\n" +
+            "- Usage: " + String.format("%.1f%%", usagePercent) + "\n" +
+            "- Free memory: " + freeMemory + "MB"
         ), false);
 
         return 1;
@@ -110,10 +115,10 @@ public class HibernateCommand {
         long memoryFreed = beforeGC - afterGC;
 
         ctx.getSource().sendSuccess(() -> Component.literal(
-                "Memory cleanup completed!\n" +
-                        "- Memory before: " + beforeGC + "MB\n" +
-                        "- Memory after: " + afterGC + "MB\n" +
-                        "- Memory freed: " + memoryFreed + "MB"
+            "Memory cleanup completed!\n" +
+            "- Memory before: " + beforeGC + "MB\n" +
+            "- Memory after: " + afterGC + "MB\n" +
+            "- Memory freed: " + memoryFreed + "MB"
         ), false);
 
         return 1;

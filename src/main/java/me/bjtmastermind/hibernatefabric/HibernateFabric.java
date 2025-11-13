@@ -1,33 +1,10 @@
 package me.bjtmastermind.hibernatefabric;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import net.fabricmc.api.ModInitializer;
+import net.minecraft.server.MinecraftServer;
 
 public class HibernateFabric implements ModInitializer {
     public static final String MOD_ID = "hibernate-fabric";
@@ -37,7 +14,7 @@ public class HibernateFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        loadConfig();
+        Config.load();
 
         // Set initial hibernation flag from config
         hibernating = Config.startEnabled;
@@ -52,8 +29,9 @@ public class HibernateFabric implements ModInitializer {
         Runtime.getRuntime().addShutdownHook(new Thread(MemoryManager::shutdown));
     }
 
-    /** Exposed to your command logic */
-    public static boolean isHibernating() { return hibernating; }
+    public static boolean isHibernating() {
+        return hibernating;
+    }
 
     public static void setHibernationState(MinecraftServer server, boolean state) {
         boolean wasHibernating = hibernating;
@@ -63,138 +41,19 @@ public class HibernateFabric implements ModInitializer {
         GameRuleHandler.setHibernationGameRules(server, state);
 
         // Manages memory optimization
+        if (!Config.enableMemoryOptimization) {
+            return;
+        }
+
         if (state && !wasHibernating) {
             // Entering hibernation
-            if (Config.enableMemoryOptimization) {
-                if (Config.saveBeforeHibernation) {
-                    MemoryManager.saveImportantData(server);
-                }
-                MemoryManager.startMemoryOptimization(server);
+            if (Config.saveBeforeHibernation) {
+                MemoryManager.saveImportantData(server);
             }
+            MemoryManager.startMemoryOptimization(server);
         } else if (!state && wasHibernating) {
             // Exiting hibernation
-            if (Config.enableMemoryOptimization) {
-                MemoryManager.stopMemoryOptimization();
-            }
+            MemoryManager.stopMemoryOptimization();
         }
-    }
-
-    private void loadConfig() {
-        try {
-            Path cfgDir  = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson    = new GsonBuilder()
-                .registerTypeAdapter(ResourceLocation.class, new JsonSerializer<ResourceLocation>() {
-                    @Override
-                    public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
-                        return new JsonPrimitive(src.toString());
-                    }
-                })
-                .registerTypeAdapter(ResourceLocation.class, new JsonDeserializer<ResourceLocation>() {
-                    @Override
-                    public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                        return ResourceLocation.tryParse(json.getAsString());
-                    }
-                })
-                .setPrettyPrinting()
-                .create();
-
-            // If no config on disk, write defaults
-            if (Files.notExists(cfgFile)) {
-                JsonObject defaults = new JsonObject();
-                defaults.addProperty("startEnabled", Config.startEnabled);
-                defaults.addProperty("ticksToSkip", Config.ticksToSkip);
-                defaults.addProperty("permissionLevel", Config.permissionLevel);
-                defaults.addProperty("sleepTimeMs", Config.sleepTimeMs);
-
-                // NEW SETTINGS FOR MEMORY OPTIMIZATION:
-                defaults.addProperty("enableMemoryOptimization", Config.enableMemoryOptimization);
-                defaults.addProperty("memoryCleanupIntervalSeconds", Config.memoryCleanupIntervalSeconds);
-                defaults.addProperty("memoryThresholdPercent", Config.memoryThresholdPercent);
-                defaults.addProperty("forceGarbageCollection", Config.forceGarbageCollection);
-                defaults.addProperty("gcIntervalSeconds", Config.gcIntervalSeconds);
-                defaults.addProperty("saveBeforeHibernation", Config.saveBeforeHibernation);
-                JsonArray removeEntitiesArray = new JsonArray();
-                for (ResourceLocation id : Config.removeEntities) {
-                    removeEntitiesArray.add(id.toString());
-                }
-                defaults.add("removeEntities", removeEntitiesArray);
-                defaults.addProperty("droppedItemMaxAgeSeconds", Config.droppedItemMaxAgeSeconds);
-                defaults.addProperty("logMemoryUsage", Config.logMemoryUsage);
-
-                // NEW SETTINGS FOR CPU OPTIMIZATION:
-                defaults.addProperty("aggressiveCpuSaving", Config.aggressiveCpuSaving);
-                defaults.addProperty("minSleepInterval", Config.minSleepInterval);
-                defaults.addProperty("highLoadSleepMultiplier", Config.highLoadSleepMultiplier);
-                defaults.addProperty("yieldInterval", Config.yieldInterval);
-
-                // NEW SETTINGS FOR RESTORING DEFAULT GAMERULE SETTINGS:
-                JsonObject restoreGameRulesAs = new JsonObject();
-                restoreGameRulesAs.addProperty("doDaylightCycle", Config.doDaylightCycle);
-                restoreGameRulesAs.addProperty("doWeatherCycle", Config.doWeatherCycle);
-                restoreGameRulesAs.addProperty("randomTickSpeed", Config.randomTickSpeed);
-                restoreGameRulesAs.addProperty("doMobSpawning", Config.doMobSpawning);
-                restoreGameRulesAs.addProperty("doFireTick", Config.doFireTick);
-                defaults.add("restoreGameRulesAs", restoreGameRulesAs);
-
-                Files.createDirectories(cfgDir);
-                try (var writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE_NEW)) {
-                    gson.toJson(defaults, writer);
-                }
-            }
-
-            // Read whatever's in the file, override Config class
-            try (var reader = Files.newBufferedReader(cfgFile)) {
-                JsonObject obj = gson.fromJson(reader, JsonObject.class);
-                Config.startEnabled    = obj.has("startEnabled")    ? obj.get("startEnabled").getAsBoolean() : Config.startEnabled;
-                Config.ticksToSkip     = obj.has("ticksToSkip")     ? obj.get("ticksToSkip").getAsLong()      : Config.ticksToSkip;
-                Config.permissionLevel = obj.has("permissionLevel") ? obj.get("permissionLevel").getAsInt()   : Config.permissionLevel;
-                Config.sleepTimeMs     = obj.has("sleepTimeMs")     ? obj.get("sleepTimeMs").getAsInt()       : Config.sleepTimeMs;
-
-                // NEW MEMORY OPTIMIZATION SETTINGS:
-                Config.enableMemoryOptimization = obj.has("enableMemoryOptimization") ? obj.get("enableMemoryOptimization").getAsBoolean() : Config.enableMemoryOptimization;
-                Config.memoryCleanupIntervalSeconds = obj.has("memoryCleanupIntervalSeconds") ? obj.get("memoryCleanupIntervalSeconds").getAsInt() : Config.memoryCleanupIntervalSeconds;
-                Config.memoryThresholdPercent = obj.has("memoryThresholdPercent") ? obj.get("memoryThresholdPercent").getAsDouble() : Config.memoryThresholdPercent;
-                Config.forceGarbageCollection = obj.has("forceGarbageCollection") ? obj.get("forceGarbageCollection").getAsBoolean() : Config.forceGarbageCollection;
-                Config.gcIntervalSeconds = obj.has("gcIntervalSeconds") ? obj.get("gcIntervalSeconds").getAsInt() : Config.gcIntervalSeconds;
-                Config.saveBeforeHibernation = obj.has("saveBeforeHibernation") ? obj.get("saveBeforeHibernation").getAsBoolean() : Config.saveBeforeHibernation;
-                Config.removeEntities = obj.has("removeEntities") ? parseRemoveEntitiesList(obj) : Config.removeEntities;
-                Config.droppedItemMaxAgeSeconds = obj.has("droppedItemMaxAgeSeconds") ? obj.get("droppedItemMaxAgeSeconds").getAsInt() : Config.droppedItemMaxAgeSeconds;
-                Config.logMemoryUsage = obj.has("logMemoryUsage") ? obj.get("logMemoryUsage").getAsBoolean() : Config.logMemoryUsage;
-
-                // NEW SETTINGS:
-                Config.aggressiveCpuSaving = obj.has("aggressiveCpuSaving") ? obj.get("aggressiveCpuSaving").getAsBoolean() : Config.aggressiveCpuSaving;
-                Config.minSleepInterval = obj.has("minSleepInterval") ? obj.get("minSleepInterval").getAsLong() : Config.minSleepInterval;
-                Config.highLoadSleepMultiplier = obj.has("highLoadSleepMultiplier") ? obj.get("highLoadSleepMultiplier").getAsDouble() : Config.highLoadSleepMultiplier;
-                Config.yieldInterval = obj.has("yieldInterval") ? obj.get("yieldInterval").getAsInt() : Config.yieldInterval;
-
-                // NEW DEFAULT GAMERULES SETTINGS:
-                JsonObject restoreGameRulesAs = obj.has("restoreGameRulesAs") ? obj.getAsJsonObject("restoreGameRulesAs") : new JsonObject();
-                Config.doDaylightCycle = restoreGameRulesAs.has("doDaylightCycle") ? restoreGameRulesAs.get("doDaylightCycle").getAsBoolean() : Config.doDaylightCycle;
-                Config.doWeatherCycle = restoreGameRulesAs.has("doWeatherCycle") ? restoreGameRulesAs.get("doWeatherCycle").getAsBoolean() : Config.doWeatherCycle;
-                Config.randomTickSpeed = restoreGameRulesAs.has("randomTickSpeed") ? restoreGameRulesAs.get("randomTickSpeed").getAsInt() : Config.randomTickSpeed;
-                Config.doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : Config.doMobSpawning;
-                Config.doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : Config.doFireTick;
-            }
-
-        } catch (IOException e) {
-            System.err.println("Failed to load hibernate-fabric config, using defaults:");
-            e.printStackTrace();
-        }
-    }
-
-    // Parses the 'removeEntities' array from the config file
-    private static List<ResourceLocation> parseRemoveEntitiesList(JsonObject obj) {
-        JsonArray removeEntitiesArray = obj.getAsJsonArray("removeEntities");
-        List<ResourceLocation> removeEntities = new ArrayList<>();
-
-        for (JsonElement element : removeEntitiesArray) {
-            ResourceLocation entityId = ResourceLocation.parse(element.getAsString());
-
-            if (BuiltInRegistries.ENTITY_TYPE.containsKey(entityId)) {
-                removeEntities.add(entityId);
-            }
-        }
-        return removeEntities;
     }
 }
