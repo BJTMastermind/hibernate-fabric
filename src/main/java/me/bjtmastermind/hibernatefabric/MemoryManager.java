@@ -175,8 +175,10 @@ public class MemoryManager {
 
         lastGCTime = System.currentTimeMillis();
 
-        HibernateFabric.LOGGER.info("GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
-            memoryFreed, gcTime, beforeGC, afterGC);
+        HibernateFabric.LOGGER.info(
+            "GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
+            memoryFreed, gcTime, beforeGC, afterGC
+        );
     }
 
     private static long getUsedMemoryMB() {
@@ -198,8 +200,10 @@ public class MemoryManager {
         double usagePercent = (double) usedMemory / (double) maxMemory * 100;
         double formattedUsagePercent = Math.round(usagePercent * 10.0) / 10.0;
 
-        HibernateFabric.LOGGER.info("Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
-            usedMemory, maxMemory, formattedUsagePercent, freeMemory);
+        HibernateFabric.LOGGER.info(
+            "Memory: {}MB used / {}MB max ({}%) — Free: {}MB",
+            usedMemory, maxMemory, formattedUsagePercent, freeMemory
+        );
     }
 
     public static void saveImportantData(MinecraftServer server) {
