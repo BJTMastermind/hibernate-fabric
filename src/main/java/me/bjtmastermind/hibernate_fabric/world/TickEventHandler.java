@@ -1,9 +1,11 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric.world;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import me.bjtmastermind.hibernate_fabric.HibernateFabric;
+import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;

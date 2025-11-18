@@ -1,5 +1,6 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric.world;
 
+import me.bjtmastermind.hibernate_fabric.HibernateFabric;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

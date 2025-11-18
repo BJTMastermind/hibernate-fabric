@@ -1,5 +1,7 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric.commands;
 
+import me.bjtmastermind.hibernate_fabric.HibernateFabric;
+import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;

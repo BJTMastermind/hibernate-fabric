@@ -1,8 +1,13 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import me.bjtmastermind.hibernate_fabric.commands.GameRuleHandler;
+import me.bjtmastermind.hibernate_fabric.commands.HibernateCommand;
+import me.bjtmastermind.hibernate_fabric.config.Config;
+import me.bjtmastermind.hibernate_fabric.world.ChunkUnloadHandler;
+import me.bjtmastermind.hibernate_fabric.world.TickEventHandler;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.server.MinecraftServer;
 

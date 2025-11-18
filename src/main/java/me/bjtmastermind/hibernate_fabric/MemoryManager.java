@@ -1,4 +1,4 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;

@@ -1,4 +1,4 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric.config;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -58,7 +58,7 @@ public class Config {
     public static boolean doMobSpawning = true;
     public static boolean doFireTick = true;
 
-    static void load() {
+    public static void load() {
         try {
             Path cfgDir = FabricLoader.getInstance().getConfigDir();
             Path cfgFile = cfgDir.resolve("hibernate-fabric.json");

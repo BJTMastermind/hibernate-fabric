@@ -1,7 +1,9 @@
-package me.bjtmastermind.hibernatefabric;
+package me.bjtmastermind.hibernate_fabric.commands;
 
 import com.mojang.brigadier.context.CommandContext;
 
+import me.bjtmastermind.hibernate_fabric.HibernateFabric;
+import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
