@@ -16,7 +16,7 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-            "me.bjtmastermind.hibernatefabric.HibernateFabric"
+            "me.bjtmastermind.hibernate_fabric.HibernateFabric"
         ]
     },
     "mixins": [],
