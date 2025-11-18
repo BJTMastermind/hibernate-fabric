@@ -72,7 +72,7 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
   "startEnabled": true,
   "ticksToSkip": 400,
   "permissionLevel": 2,
-  "sleepTimeMs": 75
+  "sleepTimeMs": 75,
   ...
 ```
 
@@ -100,7 +100,7 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
     "minecraft:experience_orb"
   ],
   "droppedItemMaxAgeSeconds": 300,
-  "logMemoryUsage": true
+  "logMemoryUsage": true,
   ...
 ```
 
@@ -123,8 +123,8 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
   "aggressiveCpuSaving": true,
   "minSleepInterval": 1500,
   "highLoadSleepMultiplier": 1.5,
-  "yieldInterval": 8
-}
+  "yieldInterval": 8,
+  ...
 ```
 
 | Setting | Default | Description |
@@ -133,6 +133,28 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `minSleepInterval` | `1500` | Minimum time in milliseconds between sleep cycles |
 | `highLoadSleepMultiplier` | `1.5` | Multiplier for sleep time when system load is high |
 | `yieldInterval` | `8` | How often to yield CPU to other threads (every N ticks) |
+
+### Gamerule Values When Not Hibernating
+
+```js
+  ...
+  "restoreGameRulesAs": {
+    "doDaylightCycle": true,
+    "doWeatherCycle": true,
+    "randomTickSpeed": 3,
+    "doMobSpawning": true,
+    "doFireTick": true
+  }
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `doDaylightCycle` | `true` | The value to restore the gamerule `doDaylightCycle` as when coming out of hibernation |
+| `doWeatherCycle` | `true` | The value to restore the gamerule `doWeatherCycle` as when coming out of hibernation |
+| `randomTickSpeed` | `3` | The value to restore the gamerule `randomTickSpeed` as when coming out of hibernation |
+| `doMobSpawning` | `true` | The value to restore the gamerule `doMobSpawning` as when coming out of hibernation |
+| `doFireTick` | `true` | The value to restore the gamerule `doFireTick` as when coming out of hibernation |
 
 ## Contributing
 
