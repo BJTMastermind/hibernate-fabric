@@ -1,8 +1,8 @@
-<p align="center"><img src="./src/main/resources/assets/hibernate-fabric/icon.png" width=96></p>
+<p align="center"><img alt="A Minecraft grass block inside an ice block representing the minecraft server hibernating." src="https://raw.githubusercontent.com/BJTMastermind/hibernate-fabric/refs/heads/main/src/main/resources/assets/hibernate-fabric/icon.png" width=96></p>
 
-<h1 align="center">Hibernate Fabric</h1>
+<h1><p align="center">Hibernate Fabric</p></h1>
 
-<p align="center">Let your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!</p>
+<p align="center">Lets your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!</p>
 
 <div align="center">
 
@@ -15,6 +15,7 @@
 
 <div align="center">
 
+[Download on Modrinth](https://modrinth.com/project/hibernate-fabric/versions) |
 [Download from Releases](https://github.com/BJTMastermind/hibernate-fabric/releases)
 
 </div>
@@ -31,7 +32,16 @@ This project is built with the following technologies:
 * ![Gradle](https://img.shields.io/badge/gradle-02303A.svg?style=for-the-badge&logo=gradle&logoColor=white)
 * ![Fabric][fabric-icon]
 
-## Getting Started
+## Run
+
+You will need a Minecraft Fabric server.
+
+1. Download `hibernate-fabric-x.x.x+mc1.x.x.jar` from one of the places at the top of this README.
+2. Copy the downloaded jar file to the `mods` folder of your Minecraft Fabric server.
+
+Don't forget to set `pause-when-empty-seconds` to `0` in your `server.properties` file to disable the vanilla hibernation system.
+
+## Getting Started With Development
 
 To get a local copy up and running, follow these simple steps.
 
@@ -62,12 +72,7 @@ cd hibernate-fabric
 ./gradlew clean build
 ```
 
-## Run
-
-You will need a Minecraft Fabric server.
-Copy the `<mod>/build/libs/hibernate-fabric-x.x.x+mc1.x.x.jar` file to the `mods` folder of your Minecraft Fabric server.
-
-Don't forget to set `pause-when-empty-seconds` to `0` in your `server.properties` file to disable the vanilla hibernation system.
+You can find the built mod at `hibernate-fabric/build/libs/hibernate-fabric-x.x.x+mc1.x.x.jar`.
 
 ## Configuration
 
