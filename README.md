@@ -1,4 +1,4 @@
-<p align="center"><img alt="A Minecraft grass block inside an ice block representing the minecraft server hibernating." src="https://raw.githubusercontent.com/BJTMastermind/hibernate-fabric/refs/heads/main/src/main/resources/assets/hibernate-fabric/icon.png" width=96></p>
+<p align="center"><img src="./src/main/resources/assets/hibernate-fabric/icon.png" width=96></p>
 
 <h1><p align="center">Hibernate Fabric</p></h1>
 
