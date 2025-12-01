@@ -3,7 +3,7 @@
     "id": "hibernate-fabric",
     "version": "${version}",
     "name": "Hibernate Fabric",
-    "description": "Let your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!",
+    "description": "Lets your Minecraft Fabric server snooze when idle, slashing CPU usage without missing a block!",
     "authors": [
         "BJTMastermind",
         "Thadah D. Denyse (Upstream Author)"
