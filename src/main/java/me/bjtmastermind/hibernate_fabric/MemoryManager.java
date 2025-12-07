@@ -1,5 +1,6 @@
 package me.bjtmastermind.hibernate_fabric;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -13,9 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.border.WorldBorder;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Memory Management System for Hibernation
@@ -59,11 +58,11 @@ public class MemoryManager {
 
     private static void performMemoryCleanup(MinecraftServer server) {
         try {
-            // 1. Unload unnecessary chunks
-            unloadUnnecessaryChunks(server);
-
-            // 2. Clean inactive entities
+            // 1. Clean inactive entities
             cleanupInactiveEntities(server);
+
+            // 2. Unload unnecessary chunks
+            unloadUnnecessaryChunks(server);
 
             // 3. Force garbage collection if needed
             if (shouldForceGC()) {
@@ -76,9 +75,28 @@ public class MemoryManager {
         }
     }
 
+    public static void forceLoadChunksWithRemovableEntities(MinecraftServer server) {
+        for (ServerLevel level : server.getAllLevels()) {
+            List<Entity> entities = new ArrayList<>();
+            level.getAllEntities().forEach(entities::add);
+
+            List<Entity> removableEntities = entities.stream()
+                .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
+                .toList();
+
+            for (Entity entity : removableEntities) {
+                ChunkPos chunkPos = new ChunkPos(entity.getBlockX() >> 4, entity.getBlockZ() >> 4);
+                level.setChunkForced(chunkPos.x, chunkPos.z, true);
+            }
+        }
+    }
+
     private static void unloadUnnecessaryChunks(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
             ServerChunkCache chunkManager = level.getChunkSource();
+
+            // Remove force loaded chunks created in forceLoadChunksWithRemovableEntities
+            chunkManager.getForceLoadedChunks().removeAll(level.getForceLoadedChunks());
 
             // Force chunk saving before unloading
             CompletableFuture.runAsync(() -> {
@@ -94,11 +112,8 @@ public class MemoryManager {
     // Remove entities that can be safely deleted during hibernation
     private static void cleanupInactiveEntities(MinecraftServer server) {
         for (ServerLevel level : server.getAllLevels()) {
-            List<Entity> entities = level.getEntities(
-                EntityTypeTest.forClass(Entity.class),
-                getWorldBorderBoundingBox(level),
-                entity -> true
-            );
+            List<Entity> entities = new ArrayList<>();
+            level.getAllEntities().forEach(entities::add);
 
             List<Entity> entitiesToRemove = entities.stream()
                 .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
@@ -116,19 +131,6 @@ public class MemoryManager {
                 );
             }
         }
-    }
-
-    private static AABB getWorldBorderBoundingBox(ServerLevel level) {
-        WorldBorder border = level.getWorldBorder();
-        double centerX = border.getCenterX();
-        double centerZ = border.getCenterZ();
-        double size = border.getSize();
-        double halfSize = size / 2.0;
-
-        return new AABB(
-            centerX - halfSize, Double.MIN_VALUE, centerZ - halfSize,
-            centerX + halfSize, Double.MAX_VALUE, centerZ + halfSize
-        );
     }
 
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
