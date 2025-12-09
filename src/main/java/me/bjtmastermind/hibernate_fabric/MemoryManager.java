@@ -95,6 +95,9 @@ public class MemoryManager {
         for (ServerLevel level : server.getAllLevels()) {
             ServerChunkCache chunkManager = level.getChunkSource();
 
+            // Remove force loaded chunks created in forceLoadChunksWithRemovableEntities
+            chunkManager.getForceLoadedChunks().removeAll(level.getForceLoadedChunks());
+
             // Force chunk saving before unloading
             CompletableFuture.runAsync(() -> {
                 try {
