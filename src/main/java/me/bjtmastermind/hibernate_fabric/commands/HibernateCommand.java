@@ -11,13 +11,15 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
 
 public class HibernateCommand {
 
     public static void register() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(Commands.literal("hibernate")
-                .requires(src -> src.hasPermission(Config.permissionLevel))
+                .requires(src -> src.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(Config.permissionLevel))))
                 .executes(HibernateCommand::toggleHibernation)
                 .then(Commands.literal("status")
                     .executes(HibernateCommand::showStatus)

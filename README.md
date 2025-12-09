@@ -51,9 +51,9 @@ Ensure you have the following installed on your machine:
 
 * **Java Development Kit (JDK)**: Version 21 or higher.
   * [Download JDK](https://adoptium.net/)
-* **Gradle**: Version 9.1 or higher.
+* **Gradle**: Version 9.2 or higher.
   * [Install Gradle](https://gradle.org/install/)
-* **Minecraft**: Version 1.21.9/10
+* **Minecraft**: Version 1.21.11
 
 ### Build
 
@@ -152,22 +152,22 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 ```js
   ...
   "restoreGameRulesAs": {
-    "doDaylightCycle": true,
-    "doWeatherCycle": true,
-    "randomTickSpeed": 3,
-    "doMobSpawning": true,
-    "doFireTick": true
+    "advance_time": true,
+    "advance_weather": true,
+    "random_tick_speed": 3,
+    "spawn_mobs": true,
+    "fire_spread_radius_around_player": 128
   }
 }
 ```
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `doDaylightCycle` | `true` | The value to restore the gamerule `doDaylightCycle` as when coming out of hibernation |
-| `doWeatherCycle` | `true` | The value to restore the gamerule `doWeatherCycle` as when coming out of hibernation |
-| `randomTickSpeed` | `3` | The value to restore the gamerule `randomTickSpeed` as when coming out of hibernation |
-| `doMobSpawning` | `true` | The value to restore the gamerule `doMobSpawning` as when coming out of hibernation |
-| `doFireTick` | `true` | The value to restore the gamerule `doFireTick` as when coming out of hibernation |
+| `advance_time` | `true` | The value to restore the gamerule `advance_time` as when coming out of hibernation |
+| `advance_weather` | `true` | The value to restore the gamerule `advance_weather` as when coming out of hibernation |
+| `random_tick_speed` | `3` | The value to restore the gamerule `random_tick_speed` as when coming out of hibernation |
+| `spawn_mobs` | `true` | The value to restore the gamerule `spawn_mobs` as when coming out of hibernation |
+| `fire_spread_radius_around_player` | `128` | The value to restore the gamerule `fire_spread_radius_around_player` as when coming out of hibernation |
 
 ## Contributing
 

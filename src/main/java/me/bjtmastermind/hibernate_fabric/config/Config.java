@@ -24,7 +24,7 @@ import com.google.gson.JsonSerializer;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class Config {
     public static boolean startEnabled = true;
@@ -38,11 +38,11 @@ public class Config {
     public static boolean forceGarbageCollection = true;
     public static int gcIntervalSeconds = 30;
     public static boolean saveBeforeHibernation = true;
-    public static List<ResourceLocation> removeEntities = List.of(
-        ResourceLocation.parse("minecraft:item"),
-        ResourceLocation.parse("minecraft:firework_rocket"),
-        ResourceLocation.parse("minecraft:arrow"),
-        ResourceLocation.parse("minecraft:experience_orb")
+    public static List<Identifier> removeEntities = List.of(
+        Identifier.parse("minecraft:item"),
+        Identifier.parse("minecraft:firework_rocket"),
+        Identifier.parse("minecraft:arrow"),
+        Identifier.parse("minecraft:experience_orb")
     );
     public static int droppedItemMaxAgeSeconds = 300;
     public static boolean logMemoryUsage = true;
@@ -52,74 +52,21 @@ public class Config {
     public static double highLoadSleepMultiplier = 1.5;
     public static int yieldInterval = 8;
 
-    public static boolean doDaylightCycle = true;
-    public static boolean doWeatherCycle = true;
+    public static boolean advanceTime = true;
+    public static boolean advanceWeather = true;
     public static int randomTickSpeed = 3;
-    public static boolean doMobSpawning = true;
-    public static boolean doFireTick = true;
+    public static boolean spawnMobs = true;
+    public static int fireSpreadRadiusAroundPlayer = 128;
 
     public static void load() {
         try {
             Path cfgDir = FabricLoader.getInstance().getConfigDir();
             Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = new GsonBuilder()
-                .registerTypeAdapter(ResourceLocation.class, new JsonSerializer<ResourceLocation>() {
-                    @Override
-                    public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
-                        return new JsonPrimitive(src.toString());
-                    }
-                })
-                .registerTypeAdapter(ResourceLocation.class, new JsonDeserializer<ResourceLocation>() {
-                    @Override
-                    public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                        return ResourceLocation.tryParse(json.getAsString());
-                    }
-                })
-                .setPrettyPrinting()
-                .create();
+            Gson gson = setupGson();
 
             // If no config on disk, write defaults
             if (Files.notExists(cfgFile)) {
-                JsonObject defaults = new JsonObject();
-                defaults.addProperty("startEnabled", startEnabled);
-                defaults.addProperty("ticksToSkip", ticksToSkip);
-                defaults.addProperty("permissionLevel", permissionLevel);
-                defaults.addProperty("sleepTimeMs", sleepTimeMs);
-
-                // NEW SETTINGS FOR MEMORY OPTIMIZATION:
-                defaults.addProperty("enableMemoryOptimization", enableMemoryOptimization);
-                defaults.addProperty("memoryCleanupIntervalSeconds", memoryCleanupIntervalSeconds);
-                defaults.addProperty("memoryThresholdPercent", memoryThresholdPercent);
-                defaults.addProperty("forceGarbageCollection", forceGarbageCollection);
-                defaults.addProperty("gcIntervalSeconds", gcIntervalSeconds);
-                defaults.addProperty("saveBeforeHibernation", saveBeforeHibernation);
-                JsonArray removeEntitiesArray = new JsonArray();
-                for (ResourceLocation id : removeEntities) {
-                    removeEntitiesArray.add(id.toString());
-                }
-                defaults.add("removeEntities", removeEntitiesArray);
-                defaults.addProperty("droppedItemMaxAgeSeconds", droppedItemMaxAgeSeconds);
-                defaults.addProperty("logMemoryUsage", logMemoryUsage);
-
-                // NEW SETTINGS FOR CPU OPTIMIZATION:
-                defaults.addProperty("aggressiveCpuSaving", aggressiveCpuSaving);
-                defaults.addProperty("minSleepInterval", minSleepInterval);
-                defaults.addProperty("highLoadSleepMultiplier", highLoadSleepMultiplier);
-                defaults.addProperty("yieldInterval", yieldInterval);
-
-                // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
-                JsonObject restoreGameRulesAs = new JsonObject();
-                restoreGameRulesAs.addProperty("doDaylightCycle", doDaylightCycle);
-                restoreGameRulesAs.addProperty("doWeatherCycle", doWeatherCycle);
-                restoreGameRulesAs.addProperty("randomTickSpeed", randomTickSpeed);
-                restoreGameRulesAs.addProperty("doMobSpawning", doMobSpawning);
-                restoreGameRulesAs.addProperty("doFireTick", doFireTick);
-                defaults.add("restoreGameRulesAs", restoreGameRulesAs);
-
-                Files.createDirectories(cfgDir);
-                try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE_NEW)) {
-                    gson.toJson(defaults, writer);
-                }
+                save();
             }
 
             // Read whatever's in the file, override Config class
@@ -149,11 +96,21 @@ public class Config {
 
                 // NEW GAMERULES SETTINGS:
                 JsonObject restoreGameRulesAs = obj.has("restoreGameRulesAs") ? obj.getAsJsonObject("restoreGameRulesAs") : new JsonObject();
-                doDaylightCycle = restoreGameRulesAs.has("doDaylightCycle") ? restoreGameRulesAs.get("doDaylightCycle").getAsBoolean() : doDaylightCycle;
-                doWeatherCycle = restoreGameRulesAs.has("doWeatherCycle") ? restoreGameRulesAs.get("doWeatherCycle").getAsBoolean() : doWeatherCycle;
-                randomTickSpeed = restoreGameRulesAs.has("randomTickSpeed") ? restoreGameRulesAs.get("randomTickSpeed").getAsInt() : randomTickSpeed;
-                doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : doMobSpawning;
-                doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : doFireTick;
+                advanceTime = restoreGameRulesAs.has("advance_time") ?
+                    restoreGameRulesAs.get("advance_time").getAsBoolean() :
+                    advanceTime;
+                advanceWeather = restoreGameRulesAs.has("advance_weather") ?
+                    restoreGameRulesAs.get("advance_weather").getAsBoolean() :
+                    advanceWeather;
+                randomTickSpeed = restoreGameRulesAs.has("random_tick_speed") ?
+                    restoreGameRulesAs.get("random_tick_speed").getAsInt() :
+                    randomTickSpeed;
+                spawnMobs = restoreGameRulesAs.has("spawn_mobs") ?
+                    restoreGameRulesAs.get("spawn_mobs").getAsBoolean() :
+                    spawnMobs;
+                fireSpreadRadiusAroundPlayer = restoreGameRulesAs.has("fire_spread_radius_around_player") ?
+                    restoreGameRulesAs.get("fire_spread_radius_around_player").getAsInt() :
+                    fireSpreadRadiusAroundPlayer;
             }
 
         } catch (IOException e) {
@@ -162,13 +119,106 @@ public class Config {
         }
     }
 
+    public static void save() {
+        try {
+            Path cfgDir = FabricLoader.getInstance().getConfigDir();
+            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
+            Gson gson = setupGson();
+
+            JsonObject defaults = new JsonObject();
+            defaults.addProperty("startEnabled", startEnabled);
+            defaults.addProperty("ticksToSkip", ticksToSkip);
+            defaults.addProperty("permissionLevel", permissionLevel);
+            defaults.addProperty("sleepTimeMs", sleepTimeMs);
+
+            // NEW SETTINGS FOR MEMORY OPTIMIZATION:
+            defaults.addProperty("enableMemoryOptimization", enableMemoryOptimization);
+            defaults.addProperty("memoryCleanupIntervalSeconds", memoryCleanupIntervalSeconds);
+            defaults.addProperty("memoryThresholdPercent", memoryThresholdPercent);
+            defaults.addProperty("forceGarbageCollection", forceGarbageCollection);
+            defaults.addProperty("gcIntervalSeconds", gcIntervalSeconds);
+            defaults.addProperty("saveBeforeHibernation", saveBeforeHibernation);
+            JsonArray removeEntitiesArray = new JsonArray();
+            for (Identifier id : removeEntities) {
+                removeEntitiesArray.add(id.toString());
+            }
+            defaults.add("removeEntities", removeEntitiesArray);
+            defaults.addProperty("droppedItemMaxAgeSeconds", droppedItemMaxAgeSeconds);
+            defaults.addProperty("logMemoryUsage", logMemoryUsage);
+
+            // NEW SETTINGS FOR CPU OPTIMIZATION:
+            defaults.addProperty("aggressiveCpuSaving", aggressiveCpuSaving);
+            defaults.addProperty("minSleepInterval", minSleepInterval);
+            defaults.addProperty("highLoadSleepMultiplier", highLoadSleepMultiplier);
+            defaults.addProperty("yieldInterval", yieldInterval);
+
+            // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
+            JsonObject restoreGameRulesAs = new JsonObject();
+            restoreGameRulesAs.addProperty("advance_time", advanceTime);
+            restoreGameRulesAs.addProperty("advance_weather", advanceWeather);
+            restoreGameRulesAs.addProperty("random_tick_speed", randomTickSpeed);
+            restoreGameRulesAs.addProperty("spawn_mobs", spawnMobs);
+            restoreGameRulesAs.addProperty("fire_spread_radius_around_player", fireSpreadRadiusAroundPlayer);
+            defaults.add("restoreGameRulesAs", restoreGameRulesAs);
+
+            Files.createDirectories(cfgDir);
+            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE)) {
+                gson.toJson(defaults, writer);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save hibernate-fabric config.");
+            e.printStackTrace();
+        }
+    }
+
+    public static JsonObject getJson() {
+        try {
+            Path cfgDir = FabricLoader.getInstance().getConfigDir();
+            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
+            Gson gson = setupGson();
+
+            if (!Files.exists(cfgFile)) {
+                return new JsonObject();
+            }
+
+            // Read whatever's in the file
+            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+                JsonObject obj = gson.fromJson(reader, JsonObject.class);
+                return obj;
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load hibernate-fabric config.");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Gson setupGson() {
+        Gson gson = new GsonBuilder()
+            .registerTypeAdapter(Identifier.class, new JsonSerializer<Identifier>() {
+                @Override
+                public JsonElement serialize(Identifier src, Type typeOfSrc, JsonSerializationContext context) {
+                    return new JsonPrimitive(src.toString());
+                }
+            })
+            .registerTypeAdapter(Identifier.class, new JsonDeserializer<Identifier>() {
+                @Override
+                public Identifier deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                    return Identifier.tryParse(json.getAsString());
+                }
+            })
+            .setPrettyPrinting()
+            .create();
+        return gson;
+    }
+
     // Parses the 'removeEntities' array from the config file
-    private static List<ResourceLocation> parseRemoveEntitiesList(JsonObject obj) {
+    private static List<Identifier> parseRemoveEntitiesList(JsonObject obj) {
         JsonArray removeEntitiesArray = obj.getAsJsonArray("removeEntities");
-        List<ResourceLocation> removeEntities = new ArrayList<>();
+        List<Identifier> removeEntities = new ArrayList<>();
 
         for (JsonElement element : removeEntitiesArray) {
-            ResourceLocation entityId = ResourceLocation.parse(element.getAsString());
+            Identifier entityId = Identifier.parse(element.getAsString());
 
             if (BuiltInRegistries.ENTITY_TYPE.containsKey(entityId)) {
                 removeEntities.add(entityId);

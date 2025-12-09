@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import me.bjtmastermind.hibernate_fabric.commands.GameRuleHandler;
 import me.bjtmastermind.hibernate_fabric.commands.HibernateCommand;
 import me.bjtmastermind.hibernate_fabric.config.Config;
+import me.bjtmastermind.hibernate_fabric.config.Upgrader;
 import me.bjtmastermind.hibernate_fabric.world.ChunkUnloadHandler;
 import me.bjtmastermind.hibernate_fabric.world.TickEventHandler;
 import net.fabricmc.api.ModInitializer;
@@ -19,6 +20,9 @@ public class HibernateFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        if (Upgrader.needsUpgrade()) {
+            Upgrader.upgrade();
+        }
         Config.load();
 
         // Set initial hibernation flag from config

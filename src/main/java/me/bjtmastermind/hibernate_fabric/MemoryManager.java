@@ -1,14 +1,20 @@
 package me.bjtmastermind.hibernate_fabric;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import me.bjtmastermind.hibernate_fabric.config.Config;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Memory Management System for Hibernation
@@ -52,10 +58,13 @@ public class MemoryManager {
 
     private static void performMemoryCleanup(MinecraftServer server) {
         try {
-            // 1. Unload unnecessary chunks
+            // 1. Clean inactive entities
+            cleanupInactiveEntities(server);
+
+            // 2. Unload unnecessary chunks
             unloadUnnecessaryChunks(server);
 
-            // 2. Force garbage collection if needed
+            // 3. Force garbage collection if needed
             if (shouldForceGC()) {
                 performGarbageCollection();
             }
@@ -63,6 +72,22 @@ public class MemoryManager {
             logMemoryUsage();
         } catch (Exception e) {
             HibernateFabric.LOGGER.error("Error during memory cleanup: ", e);
+        }
+    }
+
+    public static void forceLoadChunksWithRemovableEntities(MinecraftServer server) {
+        for (ServerLevel level : server.getAllLevels()) {
+            List<Entity> entities = new ArrayList<>();
+            level.getAllEntities().forEach(entities::add);
+
+            List<Entity> removableEntities = entities.stream()
+                .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
+                .toList();
+
+            for (Entity entity : removableEntities) {
+                ChunkPos chunkPos = new ChunkPos(entity.getBlockX() >> 4, entity.getBlockZ() >> 4);
+                level.setChunkForced(chunkPos.x, chunkPos.z, true);
+            }
         }
     }
 
@@ -78,6 +103,41 @@ public class MemoryManager {
                     HibernateFabric.LOGGER.warn("Error saving chunks: ", e);
                 }
             });
+        }
+    }
+
+    private static void cleanupInactiveEntities(MinecraftServer server) {
+        for (ServerLevel level : server.getAllLevels()) {
+            List<Entity> entities = new ArrayList<>();
+            level.getAllEntities().forEach(entities::add);
+
+            List<Entity> entitiesToRemove = entities.stream()
+                .filter(MemoryManager::canEntityBeRemovedDuringHibernation)
+                .toList();
+
+            for (Entity entity : entitiesToRemove) {
+                entity.discard();
+            }
+
+            if (!entitiesToRemove.isEmpty()) {
+                HibernateFabric.LOGGER.info(
+                    "{} inactive entities removed from the level {}",
+                    entitiesToRemove.size(),
+                    level.dimensionTypeRegistration().getRegisteredName()
+                );
+            }
+        }
+    }
+
+    private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
+        Identifier entityId = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+
+        if (Config.removeEntities.contains(Identifier.parse("minecraft:item")) &&
+            entityId.equals(Identifier.parse("minecraft:item")))
+        {
+            return entity.tickCount >= (Config.droppedItemMaxAgeSeconds * 20);
+        } else {
+            return Config.removeEntities.contains(entityId) && !entity.hasCustomName();
         }
     }
 

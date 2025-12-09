@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class GameRuleHandler {
 
@@ -48,22 +48,22 @@ public class GameRuleHandler {
      * @param hibernating Whether it is hibernating (true) or not (false)
      */
     public static void setHibernationGameRules(MinecraftServer server, boolean hibernating) {
-        GameRules rules = server.getGameRules();
+        GameRules rules = server.getWorldData().getGameRules();
 
-        // Daylight cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_DAYLIGHT).set(hibernating ? false : Config.doDaylightCycle, server);
+        // Advance time - OFF during hibernation
+        rules.set(GameRules.ADVANCE_TIME, hibernating ? false : Config.advanceTime, server);
 
-        // Weather cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(hibernating ? false : Config.doWeatherCycle, server);
+        // Advance weather - OFF during hibernation
+        rules.set(GameRules.ADVANCE_WEATHER, hibernating ? false : Config.advanceWeather, server);
 
         // Random tick speed - 0 during hibernation
-        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? 0 : Config.randomTickSpeed, server);
+        rules.set(GameRules.RANDOM_TICK_SPEED, hibernating ? 0 : Config.randomTickSpeed, server);
 
-        // Mob spawning - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(hibernating ? false : Config.doMobSpawning, server);
+        // Spawn mobs - OFF during hibernation
+        rules.set(GameRules.SPAWN_MOBS, hibernating ? false : Config.spawnMobs, server);
 
-        // Fire spread - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? false : Config.doFireTick, server);
+        // Fire spread radius - 0 during hibernation
+        rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, hibernating ? 0 : Config.fireSpreadRadiusAroundPlayer, server);
     }
 
     // Workaround for https://bugs.mojang.com/browse/MC/issues/MC-304138
