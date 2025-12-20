@@ -1,17 +1,17 @@
 package me.bjtmastermind.hibernate_fabric.world;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.bjtmastermind.hibernate_fabric.HibernateFabric;
 import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.entity.EntityTypeTest;
-import net.minecraft.world.phys.AABB;
 
 public class ChunkUnloadHandler {
 
@@ -19,16 +19,12 @@ public class ChunkUnloadHandler {
         ServerChunkEvents.CHUNK_LEVEL_TYPE_CHANGE.register((level, chunk, oldLevelType, newLevelType) -> {
             if (Config.enableMemoryOptimization && newLevelType.equals(FullChunkStatus.INACCESSIBLE)) {
                 ChunkPos chunkPos = chunk.getPos();
-                List<Entity> entities = level.getEntities(
-                    EntityTypeTest.forClass(Entity.class),
-                    new AABB(
-                        chunkPos.x * 16, Double.MIN_VALUE, chunkPos.z * 16,
-                        chunkPos.x * 16 + 16, Double.MAX_VALUE, chunkPos.z * 16 + 16
-                    ),
-                    entity -> true
-                );
+
+                List<Entity> entities = new ArrayList<>();
+                level.getAllEntities().forEach(entity -> entities.add(entity));
 
                 List<Entity> entitiesToRemove = entities.stream()
+                    .filter(entity -> ChunkUnloadHandler.isEntityInChunk(entity, chunkPos))
                     .filter(ChunkUnloadHandler::canEntityBeRemovedDuringHibernation)
                     .toList();
 
@@ -46,6 +42,11 @@ public class ChunkUnloadHandler {
                 }
             }
         });
+    }
+
+    private static boolean isEntityInChunk(Entity entity, ChunkPos chunkPos) {
+        BlockPos entityPos = entity.blockPosition();
+        return Math.floorDiv(entityPos.getX(), 16) == chunkPos.x && Math.floorDiv(entityPos.getZ(), 16) == chunkPos.z;
     }
 
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
