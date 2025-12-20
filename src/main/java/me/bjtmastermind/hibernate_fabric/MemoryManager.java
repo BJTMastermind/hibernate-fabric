@@ -149,11 +149,8 @@ public class MemoryManager {
         HibernateFabric.LOGGER.info("Saving important data before hibernation...");
 
         try {
-            // Saves the world
-            server.saveEverything(false, false, true);
-
-            // Saves player data
-            server.getPlayerList().saveAll();
+            // Saves the world and player data
+            server.saveEverything(false, false, true); // slient, flush, force
 
             HibernateFabric.LOGGER.info("Data saved successfully");
         } catch (Exception e) {
