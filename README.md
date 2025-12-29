@@ -38,7 +38,7 @@ This project is built with the following technologies:
 
 You will need a Minecraft Fabric server.
 
-1. Download `hibernate-fabric-x.x.x+mc1.x.x.jar` from one of the places at the top of this README.
+1. Download `hibernate-fabric-x.x.x+mc2x.x.jar` from one of the places at the top of this README.
 2. Copy the downloaded jar file to the `mods` folder of your Minecraft Fabric server.
 
 Don't forget to set `pause-when-empty-seconds` to `0` in your `server.properties` file to disable the vanilla hibernation system.
@@ -51,11 +51,11 @@ To get a local copy up and running, follow these simple steps.
 
 Ensure you have the following installed on your machine:
 
-* **Java Development Kit (JDK)**: Version 21 or higher.
+* **Java Development Kit (JDK)**: Version 25 or higher.
   * [Download JDK](https://adoptium.net/)
 * **Gradle**: Version 9.2 or higher.
   * [Install Gradle](https://gradle.org/install/)
-* **Minecraft**: Version 1.21.11
+* **Minecraft**: Version 26.1
 
 ### Build
 
@@ -74,7 +74,7 @@ cd hibernate-fabric
 ./gradlew clean build
 ```
 
-You can find the built mod at `hibernate-fabric/build/libs/hibernate-fabric-x.x.x+mc1.x.x.jar`.
+You can find the built mod at `hibernate-fabric/build/libs/hibernate-fabric-x.x.x+mc2x.x.jar`.
 
 ## Configuration
 

@@ -150,7 +150,7 @@ public class MemoryManager {
 
         try {
             // Saves the world and player data
-            server.saveEverything(false, false, true); // slient, flush, force
+            server.saveEverything(false, false, true);
 
             HibernateFabric.LOGGER.info("Data saved successfully");
         } catch (Exception e) {
