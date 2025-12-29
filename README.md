@@ -20,6 +20,8 @@
 
 </div>
 
+<p align="center"><a href="https://modrinth.com/project/fabric-api"><img alt="Requires Fabric API" src="https://i.imgur.com/Ol1Tcf8.png" width=148></a></p>
+
 ## About The Project
 
 **Hibernate Fabric** is a lightweight tool that automatically puts your Minecraft Fabric server to sleep when no players are online. By reducing CPU usage during idle times, it helps save server resources, lowers your electricity bill, and makes your server more eco-friendly. It's a simple way to keep your Minecraft world running smoothly without wasting power when it's not needed.
