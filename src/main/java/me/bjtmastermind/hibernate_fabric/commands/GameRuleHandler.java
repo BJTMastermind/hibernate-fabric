@@ -1,9 +1,13 @@
 package me.bjtmastermind.hibernate_fabric.commands;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import me.bjtmastermind.hibernate_fabric.HibernateFabric;
 import me.bjtmastermind.hibernate_fabric.config.Config;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
@@ -16,10 +20,12 @@ public class GameRuleHandler {
             if (Config.startEnabled && server.getPlayerCount() == 0) {
                 HibernateFabric.LOGGER.info("Server started with no players - applying hibernation game rules.");
                 setHibernationGameRules(server, true);
+                asyncEntitySpawnFixForDevEnv(server);
                 return;
             }
             HibernateFabric.LOGGER.info("Server started - applying normal game rules.");
             setHibernationGameRules(server, false);
+            asyncEntitySpawnFixForDevEnv(server);
         });
 
         // When a player connects - ALWAYS disable hibernation game rules
@@ -76,5 +82,21 @@ public class GameRuleHandler {
             case HARD -> server.setDifficulty(Difficulty.NORMAL, false);
         }
         server.setDifficulty(originalDifficulty, false);
+    }
+
+    private static void asyncEntitySpawnFixForDevEnv(MinecraftServer server) {
+        if (FabricLoader.getInstance().isModLoaded("async") && FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            HibernateFabric.LOGGER.info("Async detected - disabling async entity spawn.");
+
+            CommandSourceStack source = server.createCommandSourceStack()
+                .withPermission(4)
+                .withSuppressedOutput();
+
+            try {
+                server.getCommands().getDispatcher().execute("async config setAsyncEntitySpawn false", source);
+            } catch (CommandSyntaxException e) {
+                HibernateFabric.LOGGER.error("Failed to disable async entity spawn: ", e);
+            }
+        }
     }
 }
