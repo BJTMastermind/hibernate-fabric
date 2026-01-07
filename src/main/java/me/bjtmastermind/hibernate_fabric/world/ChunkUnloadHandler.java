@@ -16,7 +16,7 @@ import net.minecraft.world.level.ChunkPos;
 public class ChunkUnloadHandler {
 
     public static void register() {
-        ServerChunkEvents.CHUNK_LEVEL_TYPE_CHANGE.register((level, chunk, oldLevelType, newLevelType) -> {
+        ServerChunkEvents.FULL_CHUNK_STATUS_CHANGE.register((level, chunk, oldLevelType, newLevelType) -> {
             if (Config.enableMemoryOptimization && newLevelType.equals(FullChunkStatus.INACCESSIBLE)) {
                 ChunkPos chunkPos = chunk.getPos();
 
@@ -36,7 +36,7 @@ public class ChunkUnloadHandler {
                     HibernateFabric.LOGGER.info(
                         "{} inactive entities removed from chunk ({},{}) in dimension {}",
                         entitiesToRemove.size(),
-                        chunkPos.x, chunkPos.z,
+                        chunkPos.x(), chunkPos.z(),
                         level.dimensionTypeRegistration().getRegisteredName()
                     );
                 }
@@ -46,7 +46,7 @@ public class ChunkUnloadHandler {
 
     private static boolean isEntityInChunk(Entity entity, ChunkPos chunkPos) {
         BlockPos entityPos = entity.blockPosition();
-        return Math.floorDiv(entityPos.getX(), 16) == chunkPos.x && Math.floorDiv(entityPos.getZ(), 16) == chunkPos.z;
+        return Math.floorDiv(entityPos.getX(), 16) == chunkPos.x() && Math.floorDiv(entityPos.getZ(), 16) == chunkPos.z();
     }
 
     private static boolean canEntityBeRemovedDuringHibernation(Entity entity) {
