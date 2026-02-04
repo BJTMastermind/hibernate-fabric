@@ -55,7 +55,7 @@ public class GameRuleHandler {
      * @param hibernating Whether it is hibernating (true) or not (false)
      */
     public static void setHibernationGameRules(MinecraftServer server, boolean hibernating) {
-        GameRules rules = server.getWorldData().getGameRules();
+        GameRules rules = server.getGameRules();
 
         // Advance time - OFF during hibernation
         rules.set(GameRules.ADVANCE_TIME, hibernating ? false : Config.advanceTime, server);
