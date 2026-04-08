@@ -9,7 +9,8 @@
         "Thadah D. Denyse (Upstream Author)"
     ],
     "contact": {
-        "sources": "https://github.com/BJTMastermind/hibernate-fabric"
+        "sources": "https://github.com/BJTMastermind/hibernate-fabric",
+        "issues": "https://github.com/BJTMastermind/hibernate-fabric/issues"
     },
     "license": "LGPL-3.0-or-later",
     "icon": "assets/hibernate-fabric/icon.png",
@@ -21,7 +22,7 @@
     },
     "mixins": [],
     "depends": {
-        "fabricloader": ">=0.18.1",
+        "fabricloader": ">=0.18.6",
         "fabric-api": "*",
         "minecraft": "~1.21.9",
         "java": ">=21"
