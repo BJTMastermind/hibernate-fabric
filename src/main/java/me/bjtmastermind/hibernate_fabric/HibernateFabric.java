@@ -9,6 +9,7 @@ import me.bjtmastermind.hibernate_fabric.config.Config;
 import me.bjtmastermind.hibernate_fabric.world.ChunkUnloadHandler;
 import me.bjtmastermind.hibernate_fabric.world.TickEventHandler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 
 public class HibernateFabric implements ModInitializer {
@@ -30,8 +31,11 @@ public class HibernateFabric implements ModInitializer {
         TickEventHandler.register();
         ChunkUnloadHandler.register();
 
-        // Registers shutdown hook for cleanup
-        Runtime.getRuntime().addShutdownHook(new Thread(MemoryManager::shutdown));
+        // Registers shutdown hooks for cleanup
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            MemoryManager.shutdown();
+            TickEventHandler.shutdown();
+        });
     }
 
     public static boolean isHibernating() {
