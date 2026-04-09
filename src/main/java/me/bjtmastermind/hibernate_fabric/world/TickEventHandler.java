@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 public class TickEventHandler {
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static long tickCounter = 0;
     private static boolean wasHibernating = false;
 
@@ -42,8 +43,6 @@ public class TickEventHandler {
             String playerName = handler.getPlayer().getName().getString();
 
             // Waits one second to ensure the count is accurate
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-
             scheduler.schedule(() -> server.execute(() -> {
                 if (server.getPlayerCount() == 0 && !HibernateFabric.isHibernating()) {
                     HibernateFabric.LOGGER.info("Last player {} disconnected - activating hibernation.", playerName);
@@ -92,5 +91,17 @@ public class TickEventHandler {
                 Thread.yield();
             }
         });
+    }
+
+    public static void shutdown() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

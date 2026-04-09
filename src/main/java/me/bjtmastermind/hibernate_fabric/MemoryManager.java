@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerLevel;
  */
 public class MemoryManager {
     // Do not cancel the scheduler to avoid issues — only pause operations
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private static final long GC_INTERVAL_MS = Config.gcIntervalSeconds * 1000L;
     private static final double MEMORY_THRESHOLD = Config.memoryThresholdPercent / 100.0;
 
