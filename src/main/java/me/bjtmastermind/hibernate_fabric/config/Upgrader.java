@@ -21,6 +21,10 @@ public class Upgrader {
             return true;
         }
 
+        if (current.has("logMemoryUsage")) {
+            return true;
+        }
+
         return false;
     }
 
@@ -36,13 +40,15 @@ public class Upgrader {
         Integer randomTickSpeed = restoreGameRulesAs.has("randomTickSpeed") ? restoreGameRulesAs.get("randomTickSpeed").getAsInt() : null;
         Boolean doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : null;
         Boolean doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : null;
+        Boolean logMemoryUsage = current.has("logMemoryUsage") ? current.get("logMemoryUsage").getAsBoolean() : null;
 
         // Convert to new values
         if (doDaylightCycle != null) Config.advanceTime = doDaylightCycle.booleanValue();
-        if (doDaylightCycle != null) Config.advanceWeather = doWeatherCycle.booleanValue();
-        if (doDaylightCycle != null) Config.randomTickSpeed = randomTickSpeed.intValue();
-        if (doDaylightCycle != null) Config.spawnMobs = doMobSpawning.booleanValue();
-        if (doDaylightCycle != null) Config.fireSpreadRadiusAroundPlayer = doFireTick.booleanValue() ? 128 : 0;
+        if (doWeatherCycle != null) Config.advanceWeather = doWeatherCycle.booleanValue();
+        if (randomTickSpeed != null) Config.randomTickSpeed = randomTickSpeed.intValue();
+        if (doMobSpawning != null) Config.spawnMobs = doMobSpawning.booleanValue();
+        if (doFireTick != null) Config.fireSpreadRadiusAroundPlayer = doFireTick.booleanValue() ? 128 : 0;
+        if (logMemoryUsage != null) Config.logMemoryInfo = logMemoryUsage.booleanValue();
 
         // Update Config
         Config.save();

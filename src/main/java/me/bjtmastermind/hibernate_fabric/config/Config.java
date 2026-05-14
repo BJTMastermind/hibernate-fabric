@@ -45,7 +45,7 @@ public class Config {
         Identifier.parse("minecraft:experience_orb")
     );
     public static int droppedItemMaxAgeSeconds = 300;
-    public static boolean logMemoryUsage = true;
+    public static boolean logMemoryInfo = false;
 
     public static boolean aggressiveCpuSaving = true;
     public static long minSleepInterval = 1500;
@@ -86,7 +86,7 @@ public class Config {
                 saveBeforeHibernation = obj.has("saveBeforeHibernation") ? obj.get("saveBeforeHibernation").getAsBoolean() : saveBeforeHibernation;
                 removeEntities = obj.has("removeEntities") ? parseRemoveEntitiesList(obj) : removeEntities;
                 droppedItemMaxAgeSeconds = obj.has("droppedItemMaxAgeSeconds") ? obj.get("droppedItemMaxAgeSeconds").getAsInt() : droppedItemMaxAgeSeconds;
-                logMemoryUsage = obj.has("logMemoryUsage") ? obj.get("logMemoryUsage").getAsBoolean() : logMemoryUsage;
+                logMemoryInfo = obj.has("logMemoryInfo") ? obj.get("logMemoryInfo").getAsBoolean() : logMemoryInfo;
 
                 // NEW SETTINGS:
                 aggressiveCpuSaving = obj.has("aggressiveCpuSaving") ? obj.get("aggressiveCpuSaving").getAsBoolean() : aggressiveCpuSaving;
@@ -144,7 +144,7 @@ public class Config {
             }
             defaults.add("removeEntities", removeEntitiesArray);
             defaults.addProperty("droppedItemMaxAgeSeconds", droppedItemMaxAgeSeconds);
-            defaults.addProperty("logMemoryUsage", logMemoryUsage);
+            defaults.addProperty("logMemoryInfo", logMemoryInfo);
 
             // NEW SETTINGS FOR CPU OPTIMIZATION:
             defaults.addProperty("aggressiveCpuSaving", aggressiveCpuSaving);
@@ -162,7 +162,7 @@ public class Config {
             defaults.add("restoreGameRulesAs", restoreGameRulesAs);
 
             Files.createDirectories(cfgDir);
-            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 gson.toJson(defaults, writer);
             }
         } catch (IOException e) {

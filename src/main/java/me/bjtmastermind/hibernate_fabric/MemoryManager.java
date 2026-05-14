@@ -114,6 +114,10 @@ public class MemoryManager {
 
         lastGCTime = System.currentTimeMillis();
 
+        if (!Config.logMemoryInfo) {
+            return;
+        }
+
         HibernateFabric.LOGGER.info(
             "GC executed: {}MB freed in {}ms (Before: {}MB, After: {}MB)",
             memoryFreed, gcTime, beforeGC, afterGC
@@ -126,7 +130,7 @@ public class MemoryManager {
     }
 
     private static void logMemoryUsage() {
-        if (!Config.logMemoryUsage) {
+        if (!Config.logMemoryInfo) {
             return;
         }
 
