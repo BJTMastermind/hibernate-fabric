@@ -115,7 +115,7 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
     "minecraft:experience_orb"
   ],
   "droppedItemMaxAgeSeconds": 300,
-  "logMemoryUsage": true,
+  "logMemoryInfo": false,
   ...
 ```
 
@@ -129,7 +129,7 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `saveBeforeHibernation` | `true` | Save world data before entering hibernation |
 | `removeEntities` | `item`, `firework_rocket`, `arrow`, `experience_orb` | List of entities to remove during hibernation (ignores entities with custom names) |
 | `droppedItemMaxAgeSeconds` | `300` | Age in seconds after which items are removed (5 minutes) |
-| `logMemoryUsage` | `true` | Log memory usage information to console |
+| `logMemoryInfo` | `false` | Log memory usage and garbage collector information to console |
 
 ### CPU Optimization
 

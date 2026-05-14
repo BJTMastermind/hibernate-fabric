@@ -45,7 +45,7 @@ public class Config {
         ResourceLocation.parse("minecraft:experience_orb")
     );
     public static int droppedItemMaxAgeSeconds = 300;
-    public static boolean logMemoryUsage = true;
+    public static boolean logMemoryInfo = false;
 
     public static boolean aggressiveCpuSaving = true;
     public static long minSleepInterval = 1500;
@@ -62,64 +62,11 @@ public class Config {
         try {
             Path cfgDir = FabricLoader.getInstance().getConfigDir();
             Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = new GsonBuilder()
-                .registerTypeAdapter(ResourceLocation.class, new JsonSerializer<ResourceLocation>() {
-                    @Override
-                    public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
-                        return new JsonPrimitive(src.toString());
-                    }
-                })
-                .registerTypeAdapter(ResourceLocation.class, new JsonDeserializer<ResourceLocation>() {
-                    @Override
-                    public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-                        return ResourceLocation.tryParse(json.getAsString());
-                    }
-                })
-                .setPrettyPrinting()
-                .create();
+            Gson gson = setupGson();
 
             // If no config on disk, write defaults
             if (Files.notExists(cfgFile)) {
-                JsonObject defaults = new JsonObject();
-                defaults.addProperty("startEnabled", startEnabled);
-                defaults.addProperty("ticksToSkip", ticksToSkip);
-                defaults.addProperty("permissionLevel", permissionLevel);
-                defaults.addProperty("sleepTimeMs", sleepTimeMs);
-
-                // NEW SETTINGS FOR MEMORY OPTIMIZATION:
-                defaults.addProperty("enableMemoryOptimization", enableMemoryOptimization);
-                defaults.addProperty("memoryCleanupIntervalSeconds", memoryCleanupIntervalSeconds);
-                defaults.addProperty("memoryThresholdPercent", memoryThresholdPercent);
-                defaults.addProperty("forceGarbageCollection", forceGarbageCollection);
-                defaults.addProperty("gcIntervalSeconds", gcIntervalSeconds);
-                defaults.addProperty("saveBeforeHibernation", saveBeforeHibernation);
-                JsonArray removeEntitiesArray = new JsonArray();
-                for (ResourceLocation id : removeEntities) {
-                    removeEntitiesArray.add(id.toString());
-                }
-                defaults.add("removeEntities", removeEntitiesArray);
-                defaults.addProperty("droppedItemMaxAgeSeconds", droppedItemMaxAgeSeconds);
-                defaults.addProperty("logMemoryUsage", logMemoryUsage);
-
-                // NEW SETTINGS FOR CPU OPTIMIZATION:
-                defaults.addProperty("aggressiveCpuSaving", aggressiveCpuSaving);
-                defaults.addProperty("minSleepInterval", minSleepInterval);
-                defaults.addProperty("highLoadSleepMultiplier", highLoadSleepMultiplier);
-                defaults.addProperty("yieldInterval", yieldInterval);
-
-                // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
-                JsonObject restoreGameRulesAs = new JsonObject();
-                restoreGameRulesAs.addProperty("doDaylightCycle", doDaylightCycle);
-                restoreGameRulesAs.addProperty("doWeatherCycle", doWeatherCycle);
-                restoreGameRulesAs.addProperty("randomTickSpeed", randomTickSpeed);
-                restoreGameRulesAs.addProperty("doMobSpawning", doMobSpawning);
-                restoreGameRulesAs.addProperty("doFireTick", doFireTick);
-                defaults.add("restoreGameRulesAs", restoreGameRulesAs);
-
-                Files.createDirectories(cfgDir);
-                try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE_NEW)) {
-                    gson.toJson(defaults, writer);
-                }
+                save();
             }
 
             // Read whatever's in the file, override Config class
@@ -139,7 +86,7 @@ public class Config {
                 saveBeforeHibernation = obj.has("saveBeforeHibernation") ? obj.get("saveBeforeHibernation").getAsBoolean() : saveBeforeHibernation;
                 removeEntities = obj.has("removeEntities") ? parseRemoveEntitiesList(obj) : removeEntities;
                 droppedItemMaxAgeSeconds = obj.has("droppedItemMaxAgeSeconds") ? obj.get("droppedItemMaxAgeSeconds").getAsInt() : droppedItemMaxAgeSeconds;
-                logMemoryUsage = obj.has("logMemoryUsage") ? obj.get("logMemoryUsage").getAsBoolean() : logMemoryUsage;
+                logMemoryInfo = obj.has("logMemoryInfo") ? obj.get("logMemoryInfo").getAsBoolean() : logMemoryInfo;
 
                 // NEW SETTINGS:
                 aggressiveCpuSaving = obj.has("aggressiveCpuSaving") ? obj.get("aggressiveCpuSaving").getAsBoolean() : aggressiveCpuSaving;
@@ -160,6 +107,99 @@ public class Config {
             System.err.println("Failed to load hibernate-fabric config, using defaults:");
             e.printStackTrace();
         }
+    }
+
+    public static void save() {
+        try {
+            Path cfgDir = FabricLoader.getInstance().getConfigDir();
+            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
+            Gson gson = setupGson();
+
+            JsonObject defaults = new JsonObject();
+            defaults.addProperty("startEnabled", startEnabled);
+            defaults.addProperty("ticksToSkip", ticksToSkip);
+            defaults.addProperty("permissionLevel", permissionLevel);
+            defaults.addProperty("sleepTimeMs", sleepTimeMs);
+
+            // NEW SETTINGS FOR MEMORY OPTIMIZATION:
+            defaults.addProperty("enableMemoryOptimization", enableMemoryOptimization);
+            defaults.addProperty("memoryCleanupIntervalSeconds", memoryCleanupIntervalSeconds);
+            defaults.addProperty("memoryThresholdPercent", memoryThresholdPercent);
+            defaults.addProperty("forceGarbageCollection", forceGarbageCollection);
+            defaults.addProperty("gcIntervalSeconds", gcIntervalSeconds);
+            defaults.addProperty("saveBeforeHibernation", saveBeforeHibernation);
+            JsonArray removeEntitiesArray = new JsonArray();
+            for (ResourceLocation id : removeEntities) {
+                removeEntitiesArray.add(id.toString());
+            }
+            defaults.add("removeEntities", removeEntitiesArray);
+            defaults.addProperty("droppedItemMaxAgeSeconds", droppedItemMaxAgeSeconds);
+            defaults.addProperty("logMemoryInfo", logMemoryInfo);
+
+            // NEW SETTINGS FOR CPU OPTIMIZATION:
+            defaults.addProperty("aggressiveCpuSaving", aggressiveCpuSaving);
+            defaults.addProperty("minSleepInterval", minSleepInterval);
+            defaults.addProperty("highLoadSleepMultiplier", highLoadSleepMultiplier);
+            defaults.addProperty("yieldInterval", yieldInterval);
+
+            // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
+            JsonObject restoreGameRulesAs = new JsonObject();
+            restoreGameRulesAs.addProperty("doDaylightCycle", doDaylightCycle);
+            restoreGameRulesAs.addProperty("doWeatherCycle", doWeatherCycle);
+            restoreGameRulesAs.addProperty("randomTickSpeed", randomTickSpeed);
+            restoreGameRulesAs.addProperty("doMobSpawning", doMobSpawning);
+            restoreGameRulesAs.addProperty("doFireTick", doFireTick);
+            defaults.add("restoreGameRulesAs", restoreGameRulesAs);
+
+            Files.createDirectories(cfgDir);
+            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                gson.toJson(defaults, writer);
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to save hibernate-fabric config.");
+            e.printStackTrace();
+        }
+    }
+
+    public static JsonObject getJson() {
+        try {
+            Path cfgDir = FabricLoader.getInstance().getConfigDir();
+            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
+            Gson gson = setupGson();
+
+            if (!Files.exists(cfgFile)) {
+                return new JsonObject();
+            }
+
+            // Read whatever's in the file
+            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+                JsonObject obj = gson.fromJson(reader, JsonObject.class);
+                return obj;
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load hibernate-fabric config.");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Gson setupGson() {
+        Gson gson = new GsonBuilder()
+            .registerTypeAdapter(ResourceLocation.class, new JsonSerializer<ResourceLocation>() {
+                @Override
+                public JsonElement serialize(ResourceLocation src, Type typeOfSrc, JsonSerializationContext context) {
+                    return new JsonPrimitive(src.toString());
+                }
+            })
+            .registerTypeAdapter(ResourceLocation.class, new JsonDeserializer<ResourceLocation>() {
+                @Override
+                public ResourceLocation deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                    return ResourceLocation.tryParse(json.getAsString());
+                }
+            })
+            .setPrettyPrinting()
+            .create();
+        return gson;
     }
 
     // Parses the 'removeEntities' array from the config file
