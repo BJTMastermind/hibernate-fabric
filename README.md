@@ -149,27 +149,49 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `highLoadSleepMultiplier` | `1.5` | Multiplier for sleep time when system load is high |
 | `yieldInterval` | `8` | How often to yield CPU to other threads (every N ticks) |
 
-### Gamerule Values When Not Hibernating
+### Gamerule Values When The Servers Awake
 
 ```js
   ...
-  "restoreGameRulesAs": {
+  "awakeGameRules": {
     "advance_time": true,
     "advance_weather": true,
     "random_tick_speed": 3,
     "spawn_mobs": true,
     "fire_spread_radius_around_player": 128
+  },
+  ...
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `advance_time` | `true` | The value to set the gamerule `advance_time` to when coming out of hibernation |
+| `advance_weather` | `true` | The value to set the gamerule `advance_weather` to when coming out of hibernation |
+| `random_tick_speed` | `3` | The value to set the gamerule `random_tick_speed` to when coming out of hibernation |
+| `spawn_mobs` | `true` | The value to set the gamerule `spawn_mobs` to when coming out of hibernation |
+| `fire_spread_radius_around_player` | `128` | The value to set the gamerule `fire_spread_radius_around_player` to when coming out of hibernation |
+
+### Gamerule Values When The Servers Hibernating
+
+```js
+  ...
+  "hibernatingGameRules": {
+    "advance_time": false,
+    "advance_weather": false,
+    "random_tick_speed": 0,
+    "spawn_mobs": false,
+    "fire_spread_radius_around_player": 0
   }
 }
 ```
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `advance_time` | `true` | The value to restore the gamerule `advance_time` as when coming out of hibernation |
-| `advance_weather` | `true` | The value to restore the gamerule `advance_weather` as when coming out of hibernation |
-| `random_tick_speed` | `3` | The value to restore the gamerule `random_tick_speed` as when coming out of hibernation |
-| `spawn_mobs` | `true` | The value to restore the gamerule `spawn_mobs` as when coming out of hibernation |
-| `fire_spread_radius_around_player` | `128` | The value to restore the gamerule `fire_spread_radius_around_player` as when coming out of hibernation |
+| `advance_time` | `false` | The value to set the gamerule `advance_time` to when going into hibernation |
+| `advance_weather` | `false` | The value to set the gamerule `advance_weather` to when going into hibernation |
+| `random_tick_speed` | `0` | The value to set the gamerule `random_tick_speed` to when going into hibernation |
+| `spawn_mobs` | `false` | The value to set the gamerule `spawn_mobs` to when going into hibernation |
+| `fire_spread_radius_around_player` | `0` | The value to set the gamerule `fire_spread_radius_around_player` to when going into hibernation |
 
 ## Contributing
 
