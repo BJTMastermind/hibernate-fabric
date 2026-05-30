@@ -58,19 +58,19 @@ public class GameRuleHandler {
         GameRules rules = server.getWorldData().getGameRules();
 
         // Advance time - OFF during hibernation
-        rules.set(GameRules.ADVANCE_TIME, hibernating ? false : Config.advanceTime, server);
+        rules.set(GameRules.ADVANCE_TIME, hibernating ? Config.hibernatingAdvanceTime : Config.awakeAdvanceTime, server);
 
         // Advance weather - OFF during hibernation
-        rules.set(GameRules.ADVANCE_WEATHER, hibernating ? false : Config.advanceWeather, server);
+        rules.set(GameRules.ADVANCE_WEATHER, hibernating ? Config.hibernatingAdvanceWeather : Config.awakeAdvanceWeather, server);
 
         // Random tick speed - 0 during hibernation
-        rules.set(GameRules.RANDOM_TICK_SPEED, hibernating ? 0 : Config.randomTickSpeed, server);
+        rules.set(GameRules.RANDOM_TICK_SPEED, hibernating ? Config.hibernatingRandomTickSpeed : Config.awakeRandomTickSpeed, server);
 
         // Spawn mobs - OFF during hibernation
-        rules.set(GameRules.SPAWN_MOBS, hibernating ? false : Config.spawnMobs, server);
+        rules.set(GameRules.SPAWN_MOBS, hibernating ? Config.hibernatingSpawnMobs : Config.awakeSpawnMobs, server);
 
         // Fire spread radius - 0 during hibernation
-        rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, hibernating ? 0 : Config.fireSpreadRadiusAroundPlayer, server);
+        rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, hibernating ? Config.hibernatingFireSpreadRadiusAroundPlayer : Config.awakeFireSpreadRadiusAroundPlayer, server);
     }
 
     // Workaround for https://bugs.mojang.com/browse/MC/issues/MC-304138
