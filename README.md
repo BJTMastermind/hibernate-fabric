@@ -149,27 +149,49 @@ The mod automatically creates a configuration file at `config/hibernate-fabric.j
 | `highLoadSleepMultiplier` | `1.5` | Multiplier for sleep time when system load is high |
 | `yieldInterval` | `8` | How often to yield CPU to other threads (every N ticks) |
 
-### Gamerule Values When Not Hibernating
+### Gamerule Values When The Servers Awake
 
 ```js
   ...
-  "restoreGameRulesAs": {
+  "awakeGameRules": {
     "doDaylightCycle": true,
     "doWeatherCycle": true,
     "randomTickSpeed": 3,
     "doMobSpawning": true,
     "doFireTick": true
+  },
+  ...
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `doDaylightCycle` | `true` | The value to set the gamerule `doDaylightCycle` to when coming out of hibernation |
+| `doWeatherCycle` | `true` | The value to set the gamerule `doWeatherCycle` to when coming out of hibernation |
+| `randomTickSpeed` | `3` | The value to set the gamerule `randomTickSpeed` to when coming out of hibernation |
+| `doMobSpawning` | `true` | The value to set the gamerule `doMobSpawning` to when coming out of hibernation |
+| `doFireTick` | `true` | The value to set the gamerule `doFireTick` to when coming out of hibernation |
+
+### Gamerule Values When The Servers Hibernating
+
+```js
+  ...
+  "hibernatingGameRules": {
+    "doDaylightCycle": false,
+    "doWeatherCycle": false,
+    "randomTickSpeed": 0,
+    "doMobSpawning": false,
+    "doFireTick": false
   }
 }
 ```
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `doDaylightCycle` | `true` | The value to restore the gamerule `doDaylightCycle` as when coming out of hibernation |
-| `doWeatherCycle` | `true` | The value to restore the gamerule `doWeatherCycle` as when coming out of hibernation |
-| `randomTickSpeed` | `3` | The value to restore the gamerule `randomTickSpeed` as when coming out of hibernation |
-| `doMobSpawning` | `true` | The value to restore the gamerule `doMobSpawning` as when coming out of hibernation |
-| `doFireTick` | `true` | The value to restore the gamerule `doFireTick` as when coming out of hibernation |
+| `doDaylightCycle` | `false` | The value to set the gamerule `doDaylightCycle` to when going into hibernation |
+| `doWeatherCycle` | `false` | The value to set the gamerule `doWeatherCycle` to when going into hibernation |
+| `randomTickSpeed` | `0` | The value to set the gamerule `randomTickSpeed` to when going into hibernation |
+| `doMobSpawning` | `false` | The value to set the gamerule `doMobSpawning` to when going into hibernation |
+| `doFireTick` | `false` | The value to set the gamerule `doFireTick` to when going into hibernation |
 
 ## Contributing
 
