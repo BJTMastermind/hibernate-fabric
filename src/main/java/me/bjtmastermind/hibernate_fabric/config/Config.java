@@ -27,6 +27,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 
 public class Config {
+    private static Path cfgDir = FabricLoader.getInstance().getConfigDir();
+    private static Gson gson = setupGson();
+
+    public static final Path configFile = cfgDir.resolve("hibernate-fabric.json");
+
     public static boolean startEnabled = true;
     public static long ticksToSkip = 400L;
     public static int permissionLevel = 2;
@@ -52,25 +57,27 @@ public class Config {
     public static double highLoadSleepMultiplier = 1.5;
     public static int yieldInterval = 8;
 
-    public static boolean doDaylightCycle = true;
-    public static boolean doWeatherCycle = true;
-    public static int randomTickSpeed = 3;
-    public static boolean doMobSpawning = true;
-    public static boolean doFireTick = true;
+    public static boolean awakeDoDaylightCycle = true;
+    public static boolean awakeDoWeatherCycle = true;
+    public static int awakeRandomTickSpeed = 3;
+    public static boolean awakeDoMobSpawning = true;
+    public static boolean awakeDoFireTick = true;
+
+    public static boolean hibernatingDoDaylightCycle = false;
+    public static boolean hibernatingDoWeatherCycle = false;
+    public static int hibernatingRandomTickSpeed = 0;
+    public static boolean hibernatingDoMobSpawning = false;
+    public static boolean hibernatingDoFireTick = false;
 
     public static void load() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
             // If no config on disk, write defaults
-            if (Files.notExists(cfgFile)) {
+            if (Files.notExists(configFile)) {
                 save();
             }
 
             // Read whatever's in the file, override Config class
-            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+            try (BufferedReader reader = Files.newBufferedReader(configFile)) {
                 JsonObject obj = gson.fromJson(reader, JsonObject.class);
                 startEnabled = obj.has("startEnabled") ? obj.get("startEnabled").getAsBoolean() : startEnabled;
                 ticksToSkip = obj.has("ticksToSkip") ? obj.get("ticksToSkip").getAsLong() : ticksToSkip;
@@ -95,12 +102,19 @@ public class Config {
                 yieldInterval = obj.has("yieldInterval") ? obj.get("yieldInterval").getAsInt() : yieldInterval;
 
                 // NEW GAMERULES SETTINGS:
-                JsonObject restoreGameRulesAs = obj.has("restoreGameRulesAs") ? obj.getAsJsonObject("restoreGameRulesAs") : new JsonObject();
-                doDaylightCycle = restoreGameRulesAs.has("doDaylightCycle") ? restoreGameRulesAs.get("doDaylightCycle").getAsBoolean() : doDaylightCycle;
-                doWeatherCycle = restoreGameRulesAs.has("doWeatherCycle") ? restoreGameRulesAs.get("doWeatherCycle").getAsBoolean() : doWeatherCycle;
-                randomTickSpeed = restoreGameRulesAs.has("randomTickSpeed") ? restoreGameRulesAs.get("randomTickSpeed").getAsInt() : randomTickSpeed;
-                doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : doMobSpawning;
-                doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : doFireTick;
+                JsonObject awakeGameRules = obj.has("awakeGameRules") ? obj.getAsJsonObject("awakeGameRules") : new JsonObject();
+                awakeDoDaylightCycle = awakeGameRules.has("doDaylightCycle") ? awakeGameRules.get("doDaylightCycle").getAsBoolean() : awakeDoDaylightCycle;
+                awakeDoWeatherCycle = awakeGameRules.has("doWeatherCycle") ? awakeGameRules.get("doWeatherCycle").getAsBoolean() : awakeDoWeatherCycle;
+                awakeRandomTickSpeed = awakeGameRules.has("randomTickSpeed") ? awakeGameRules.get("randomTickSpeed").getAsInt() : awakeRandomTickSpeed;
+                awakeDoMobSpawning = awakeGameRules.has("doMobSpawning") ? awakeGameRules.get("doMobSpawning").getAsBoolean() : awakeDoMobSpawning;
+                awakeDoFireTick = awakeGameRules.has("doFireTick") ? awakeGameRules.get("doFireTick").getAsBoolean() : awakeDoFireTick;
+
+                JsonObject hibernatingGameRules = obj.has("hibernatingGameRules") ? obj.getAsJsonObject("hibernatingGameRules") : new JsonObject();
+                hibernatingDoDaylightCycle = hibernatingGameRules.has("doDaylightCycle") ? hibernatingGameRules.get("doDaylightCycle").getAsBoolean() : hibernatingDoDaylightCycle;
+                hibernatingDoWeatherCycle = hibernatingGameRules.has("doWeatherCycle") ? hibernatingGameRules.get("doWeatherCycle").getAsBoolean() : hibernatingDoWeatherCycle;
+                hibernatingRandomTickSpeed = hibernatingGameRules.has("randomTickSpeed") ? hibernatingGameRules.get("randomTickSpeed").getAsInt() : hibernatingRandomTickSpeed;
+                hibernatingDoMobSpawning = hibernatingGameRules.has("doMobSpawning") ? hibernatingGameRules.get("doMobSpawning").getAsBoolean() : hibernatingDoMobSpawning;
+                hibernatingDoFireTick = hibernatingGameRules.has("doFireTick") ? hibernatingGameRules.get("doFireTick").getAsBoolean() : hibernatingDoFireTick;
             }
 
         } catch (IOException e) {
@@ -111,10 +125,6 @@ public class Config {
 
     public static void save() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
             JsonObject defaults = new JsonObject();
             defaults.addProperty("startEnabled", startEnabled);
             defaults.addProperty("ticksToSkip", ticksToSkip);
@@ -143,16 +153,24 @@ public class Config {
             defaults.addProperty("yieldInterval", yieldInterval);
 
             // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
-            JsonObject restoreGameRulesAs = new JsonObject();
-            restoreGameRulesAs.addProperty("doDaylightCycle", doDaylightCycle);
-            restoreGameRulesAs.addProperty("doWeatherCycle", doWeatherCycle);
-            restoreGameRulesAs.addProperty("randomTickSpeed", randomTickSpeed);
-            restoreGameRulesAs.addProperty("doMobSpawning", doMobSpawning);
-            restoreGameRulesAs.addProperty("doFireTick", doFireTick);
-            defaults.add("restoreGameRulesAs", restoreGameRulesAs);
+            JsonObject awakeGameRules = new JsonObject();
+            awakeGameRules.addProperty("doDaylightCycle", awakeDoDaylightCycle);
+            awakeGameRules.addProperty("doWeatherCycle", awakeDoWeatherCycle);
+            awakeGameRules.addProperty("randomTickSpeed", awakeRandomTickSpeed);
+            awakeGameRules.addProperty("doMobSpawning", awakeDoMobSpawning);
+            awakeGameRules.addProperty("doFireTick", awakeDoFireTick);
+            defaults.add("awakeGameRules", awakeGameRules);
+
+            JsonObject hibernatingGameRules = new JsonObject();
+            hibernatingGameRules.addProperty("doDaylightCycle", hibernatingDoDaylightCycle);
+            hibernatingGameRules.addProperty("doWeatherCycle", hibernatingDoWeatherCycle);
+            hibernatingGameRules.addProperty("randomTickSpeed", hibernatingRandomTickSpeed);
+            hibernatingGameRules.addProperty("doMobSpawning", hibernatingDoMobSpawning);
+            hibernatingGameRules.addProperty("doFireTick", hibernatingDoFireTick);
+            defaults.add("hibernatingGameRules", hibernatingGameRules);
 
             Files.createDirectories(cfgDir);
-            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(configFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 gson.toJson(defaults, writer);
             }
         } catch (IOException e) {
@@ -163,16 +181,12 @@ public class Config {
 
     public static JsonObject getJson() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
-            if (!Files.exists(cfgFile)) {
+            if (!Files.exists(configFile)) {
                 return new JsonObject();
             }
 
             // Read whatever's in the file
-            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+            try (BufferedReader reader = Files.newBufferedReader(configFile)) {
                 JsonObject obj = gson.fromJson(reader, JsonObject.class);
                 return obj;
             }

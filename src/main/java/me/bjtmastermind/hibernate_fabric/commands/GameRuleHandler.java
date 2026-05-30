@@ -57,19 +57,19 @@ public class GameRuleHandler {
         GameRules rules = server.getGameRules();
 
         // Daylight cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_DAYLIGHT).set(hibernating ? false : Config.doDaylightCycle, server);
+        rules.getRule(GameRules.RULE_DAYLIGHT).set(hibernating ? Config.hibernatingDoDaylightCycle : Config.awakeDoDaylightCycle, server);
 
         // Weather cycle - OFF during hibernation
-        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(hibernating ? false : Config.doWeatherCycle, server);
+        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(hibernating ? Config.hibernatingDoWeatherCycle : Config.awakeDoWeatherCycle, server);
 
         // Random tick speed - 0 during hibernation
-        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? 0 : Config.randomTickSpeed, server);
+        rules.getRule(GameRules.RULE_RANDOMTICKING).set(hibernating ? Config.hibernatingRandomTickSpeed : Config.awakeRandomTickSpeed, server);
 
         // Mob spawning - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(hibernating ? false : Config.doMobSpawning, server);
+        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(hibernating ? Config.hibernatingDoMobSpawning : Config.awakeDoMobSpawning, server);
 
         // Fire spread - OFF during hibernation
-        rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? false : Config.doFireTick, server);
+        rules.getRule(GameRules.RULE_DOFIRETICK).set(hibernating ? Config.hibernatingDoFireTick : Config.awakeDoFireTick, server);
     }
 
     // Workaround for https://bugs.mojang.com/browse/MC/issues/MC-304138
