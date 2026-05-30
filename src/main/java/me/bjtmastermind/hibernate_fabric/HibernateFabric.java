@@ -1,5 +1,7 @@
 package me.bjtmastermind.hibernate_fabric;
 
+import java.nio.file.Files;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,7 @@ public class HibernateFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        if (Upgrader.needsUpgrade()) {
+        if (Files.exists(Config.configFile) && Upgrader.needsUpgrade()) {
             Upgrader.upgrade();
         }
         Config.load();

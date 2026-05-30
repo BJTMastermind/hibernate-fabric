@@ -8,16 +8,11 @@ public class Upgrader {
 
     public static boolean needsUpgrade() {
         JsonObject current = Config.getJson();
-        if (!current.has("restoreGameRulesAs")) {
-            return false;
+        if (!current.has("awakeGameRules") || !current.has("hibernatingGameRules")) {
+            return true;
         }
 
-        JsonObject restoreGameRulesAs = current.getAsJsonObject("restoreGameRulesAs");
-        if (restoreGameRulesAs.has("doDaylightCycle") ||
-            restoreGameRulesAs.has("doWeatherCycle") ||
-            restoreGameRulesAs.has("randomTickSpeed") ||
-            restoreGameRulesAs.has("doMobSpawning") ||
-            restoreGameRulesAs.has("doFireTick")) {
+        if (current.has("restoreGameRulesAs")) {
             return true;
         }
 
@@ -41,14 +36,16 @@ public class Upgrader {
         Boolean doMobSpawning = restoreGameRulesAs.has("doMobSpawning") ? restoreGameRulesAs.get("doMobSpawning").getAsBoolean() : null;
         Boolean doFireTick = restoreGameRulesAs.has("doFireTick") ? restoreGameRulesAs.get("doFireTick").getAsBoolean() : null;
         Boolean logMemoryUsage = current.has("logMemoryUsage") ? current.get("logMemoryUsage").getAsBoolean() : null;
+        Integer fireSpreadRadiusAroundPlayer = current.has("fireSpreadRadiusAroundPlayer") ? current.get("fireSpreadRadiusAroundPlayer").getAsInt() : null;
 
         // Convert to new values
-        if (doDaylightCycle != null) Config.advanceTime = doDaylightCycle.booleanValue();
-        if (doWeatherCycle != null) Config.advanceWeather = doWeatherCycle.booleanValue();
-        if (randomTickSpeed != null) Config.randomTickSpeed = randomTickSpeed.intValue();
-        if (doMobSpawning != null) Config.spawnMobs = doMobSpawning.booleanValue();
-        if (doFireTick != null) Config.fireSpreadRadiusAroundPlayer = doFireTick.booleanValue() ? 128 : 0;
+        if (doDaylightCycle != null) Config.awakeAdvanceTime = doDaylightCycle.booleanValue();
+        if (doWeatherCycle != null) Config.awakeAdvanceWeather = doWeatherCycle.booleanValue();
+        if (randomTickSpeed != null) Config.awakeRandomTickSpeed = randomTickSpeed.intValue();
+        if (doMobSpawning != null) Config.awakeSpawnMobs = doMobSpawning.booleanValue();
+        if (doFireTick != null) Config.awakeFireSpreadRadiusAroundPlayer = doFireTick.booleanValue() ? 128 : 0;
         if (logMemoryUsage != null) Config.logMemoryInfo = logMemoryUsage.booleanValue();
+        if (fireSpreadRadiusAroundPlayer != null) Config.awakeFireSpreadRadiusAroundPlayer = fireSpreadRadiusAroundPlayer.intValue();
 
         // Update Config
         Config.save();

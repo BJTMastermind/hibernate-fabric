@@ -27,6 +27,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 
 public class Config {
+    private static Path cfgDir = FabricLoader.getInstance().getConfigDir();
+    private static Gson gson = setupGson();
+
+    public static final Path configFile = cfgDir.resolve("hibernate-fabric.json");
+
     public static boolean startEnabled = true;
     public static long ticksToSkip = 400L;
     public static int permissionLevel = 2;
@@ -52,25 +57,27 @@ public class Config {
     public static double highLoadSleepMultiplier = 1.5;
     public static int yieldInterval = 8;
 
-    public static boolean advanceTime = true;
-    public static boolean advanceWeather = true;
-    public static int randomTickSpeed = 3;
-    public static boolean spawnMobs = true;
-    public static int fireSpreadRadiusAroundPlayer = 128;
+    public static boolean awakeAdvanceTime = true;
+    public static boolean awakeAdvanceWeather = true;
+    public static int awakeRandomTickSpeed = 3;
+    public static boolean awakeSpawnMobs = true;
+    public static int awakeFireSpreadRadiusAroundPlayer = 128;
+
+    public static boolean hibernatingAdvanceTime = false;
+    public static boolean hibernatingAdvanceWeather = false;
+    public static int hibernatingRandomTickSpeed = 0;
+    public static boolean hibernatingSpawnMobs = false;
+    public static int hibernatingFireSpreadRadiusAroundPlayer = 0;
 
     public static void load() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
             // If no config on disk, write defaults
-            if (Files.notExists(cfgFile)) {
+            if (Files.notExists(configFile)) {
                 save();
             }
 
             // Read whatever's in the file, override Config class
-            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+            try (BufferedReader reader = Files.newBufferedReader(configFile)) {
                 JsonObject obj = gson.fromJson(reader, JsonObject.class);
                 startEnabled = obj.has("startEnabled") ? obj.get("startEnabled").getAsBoolean() : startEnabled;
                 ticksToSkip = obj.has("ticksToSkip") ? obj.get("ticksToSkip").getAsLong() : ticksToSkip;
@@ -95,22 +102,39 @@ public class Config {
                 yieldInterval = obj.has("yieldInterval") ? obj.get("yieldInterval").getAsInt() : yieldInterval;
 
                 // NEW GAMERULES SETTINGS:
-                JsonObject restoreGameRulesAs = obj.has("restoreGameRulesAs") ? obj.getAsJsonObject("restoreGameRulesAs") : new JsonObject();
-                advanceTime = restoreGameRulesAs.has("advance_time") ?
-                    restoreGameRulesAs.get("advance_time").getAsBoolean() :
-                    advanceTime;
-                advanceWeather = restoreGameRulesAs.has("advance_weather") ?
-                    restoreGameRulesAs.get("advance_weather").getAsBoolean() :
-                    advanceWeather;
-                randomTickSpeed = restoreGameRulesAs.has("random_tick_speed") ?
-                    restoreGameRulesAs.get("random_tick_speed").getAsInt() :
-                    randomTickSpeed;
-                spawnMobs = restoreGameRulesAs.has("spawn_mobs") ?
-                    restoreGameRulesAs.get("spawn_mobs").getAsBoolean() :
-                    spawnMobs;
-                fireSpreadRadiusAroundPlayer = restoreGameRulesAs.has("fire_spread_radius_around_player") ?
-                    restoreGameRulesAs.get("fire_spread_radius_around_player").getAsInt() :
-                    fireSpreadRadiusAroundPlayer;
+                JsonObject awakeGameRules = obj.has("awakeGameRules") ? obj.getAsJsonObject("awakeGameRules") : new JsonObject();
+                awakeAdvanceTime = awakeGameRules.has("advance_time") ?
+                    awakeGameRules.get("advance_time").getAsBoolean() :
+                    awakeAdvanceTime;
+                awakeAdvanceWeather = awakeGameRules.has("advance_weather") ?
+                    awakeGameRules.get("advance_weather").getAsBoolean() :
+                    awakeAdvanceWeather;
+                awakeRandomTickSpeed = awakeGameRules.has("random_tick_speed") ?
+                    awakeGameRules.get("random_tick_speed").getAsInt() :
+                    awakeRandomTickSpeed;
+                awakeSpawnMobs = awakeGameRules.has("spawn_mobs") ?
+                    awakeGameRules.get("spawn_mobs").getAsBoolean() :
+                    awakeSpawnMobs;
+                awakeFireSpreadRadiusAroundPlayer = awakeGameRules.has("fire_spread_radius_around_player") ?
+                    awakeGameRules.get("fire_spread_radius_around_player").getAsInt() :
+                    awakeFireSpreadRadiusAroundPlayer;
+
+                JsonObject hibernatingGameRules = obj.has("hibernatingGameRules") ? obj.getAsJsonObject("hibernatingGameRules") : new JsonObject();
+                hibernatingAdvanceTime = hibernatingGameRules.has("advance_time") ?
+                    hibernatingGameRules.get("advance_time").getAsBoolean() :
+                    hibernatingAdvanceTime;
+                hibernatingAdvanceWeather = hibernatingGameRules.has("advance_weather") ?
+                    hibernatingGameRules.get("advance_weather").getAsBoolean() :
+                    hibernatingAdvanceWeather;
+                hibernatingRandomTickSpeed = hibernatingGameRules.has("random_tick_speed") ?
+                    hibernatingGameRules.get("random_tick_speed").getAsInt() :
+                    hibernatingRandomTickSpeed;
+                hibernatingSpawnMobs = hibernatingGameRules.has("spawn_mobs") ?
+                    hibernatingGameRules.get("spawn_mobs").getAsBoolean() :
+                    hibernatingSpawnMobs;
+                hibernatingFireSpreadRadiusAroundPlayer = hibernatingGameRules.has("fire_spread_radius_around_player") ?
+                    hibernatingGameRules.get("fire_spread_radius_around_player").getAsInt() :
+                    hibernatingFireSpreadRadiusAroundPlayer;
             }
 
         } catch (IOException e) {
@@ -121,10 +145,6 @@ public class Config {
 
     public static void save() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
             JsonObject defaults = new JsonObject();
             defaults.addProperty("startEnabled", startEnabled);
             defaults.addProperty("ticksToSkip", ticksToSkip);
@@ -153,16 +173,24 @@ public class Config {
             defaults.addProperty("yieldInterval", yieldInterval);
 
             // NEW SETTINGS FOR RESTORING GAMERULE SETTINGS:
-            JsonObject restoreGameRulesAs = new JsonObject();
-            restoreGameRulesAs.addProperty("advance_time", advanceTime);
-            restoreGameRulesAs.addProperty("advance_weather", advanceWeather);
-            restoreGameRulesAs.addProperty("random_tick_speed", randomTickSpeed);
-            restoreGameRulesAs.addProperty("spawn_mobs", spawnMobs);
-            restoreGameRulesAs.addProperty("fire_spread_radius_around_player", fireSpreadRadiusAroundPlayer);
-            defaults.add("restoreGameRulesAs", restoreGameRulesAs);
+            JsonObject awakeGameRules = new JsonObject();
+            awakeGameRules.addProperty("advance_time", awakeAdvanceTime);
+            awakeGameRules.addProperty("advance_weather", awakeAdvanceWeather);
+            awakeGameRules.addProperty("random_tick_speed", awakeRandomTickSpeed);
+            awakeGameRules.addProperty("spawn_mobs", awakeSpawnMobs);
+            awakeGameRules.addProperty("fire_spread_radius_around_player", awakeFireSpreadRadiusAroundPlayer);
+            defaults.add("awakeGameRules", awakeGameRules);
+
+            JsonObject hibernatingGameRules = new JsonObject();
+            hibernatingGameRules.addProperty("advance_time", hibernatingAdvanceTime);
+            hibernatingGameRules.addProperty("advance_weather", hibernatingAdvanceWeather);
+            hibernatingGameRules.addProperty("random_tick_speed", hibernatingRandomTickSpeed);
+            hibernatingGameRules.addProperty("spawn_mobs", hibernatingSpawnMobs);
+            hibernatingGameRules.addProperty("fire_spread_radius_around_player", hibernatingFireSpreadRadiusAroundPlayer);
+            defaults.add("hibernatingGameRules", hibernatingGameRules);
 
             Files.createDirectories(cfgDir);
-            try (BufferedWriter writer = Files.newBufferedWriter(cfgFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(configFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 gson.toJson(defaults, writer);
             }
         } catch (IOException e) {
@@ -173,16 +201,12 @@ public class Config {
 
     public static JsonObject getJson() {
         try {
-            Path cfgDir = FabricLoader.getInstance().getConfigDir();
-            Path cfgFile = cfgDir.resolve("hibernate-fabric.json");
-            Gson gson = setupGson();
-
-            if (!Files.exists(cfgFile)) {
+            if (!Files.exists(configFile)) {
                 return new JsonObject();
             }
 
             // Read whatever's in the file
-            try (BufferedReader reader = Files.newBufferedReader(cfgFile)) {
+            try (BufferedReader reader = Files.newBufferedReader(configFile)) {
                 JsonObject obj = gson.fromJson(reader, JsonObject.class);
                 return obj;
             }
