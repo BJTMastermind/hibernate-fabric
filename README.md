@@ -1,3 +1,7 @@
+> [!note]
+> This project has been migrated to Codeberg and will no longer be updated here.<br>
+> Visit the projects Codeberg repository at: https://codeberg.org/VoxelBill/hibernate-fabric
+
 <p align="center"><img alt="A Minecraft grass block inside an ice block representing the minecraft server hibernating." src="https://cdn.modrinth.com/data/cached_images/7725ff8de4f2142a81d4236ec00173982cc47b9e.png" width=96></p>
 
 <h1><p align="center">Hibernate Fabric</p></h1>
